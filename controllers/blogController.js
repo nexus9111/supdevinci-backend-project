@@ -1,4 +1,5 @@
 const Article = require("../models/articleModels");
+const Comment = require("../models/commentModels");
 
 const logger = require("../config/logger");
 
@@ -159,6 +160,90 @@ exports.update = async (req, res, next) => {
                 article: articleUtils.safeArticle(article)
             }
         });
+    } catch (error) {
+        next(error);
+    }
+}
+
+exports.comment = async (req, res, next) => {
+    try {
+        let article = await Article.findOne({ id: req.params.id });
+        if (!article) {
+            req.statusCode = 404;
+            throw new Error("Article not found");
+        }
+
+        if (!req.body.comment) {
+            req.statusCode = 400;
+            throw new Error("Please provide content");
+        }
+
+        let comment = new Comment({
+            author: req.connectedUser.id,
+            article: article.id,
+            authorName: req.connectedUser.username,
+            comment: req.body.comment
+        });
+
+        comment = await comment.save();
+
+        logger.info(`Comment created successfully`, {
+            article: comment.article,
+            author: comment.author,
+            comment: comment.comment
+        });
+
+        return res.status(201).json({
+            success: true,
+            data: {
+                message: "Comment created successfully",
+                comment: comment
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
+exports.getComment = async (req, res, next) => {
+    try {
+        let comments = await Comment.find({ article: req.params.id })
+            .select('-__v')
+            .select('-_id')
+            .sort({ date: -1 });
+        
+        return res.status(200).json({
+            success: true,
+            data: {
+                comments: comments
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
+exports.deleteComment = async (req, res, next) => {
+    try {
+        let comment = await Comment.findOne({ id: req.params.id });
+        if (!comment) {
+            req.statusCode = 404;
+            throw new Error("Comment not found");
+        }
+
+        if (comment.author != req.connectedUser.id && req.connectedUser.role != "admin" && req.connectedUser.role != "superadmin") {
+            req.statusCode = 403;
+            throw new Error("You are not allowed to delete this comment");
+        }
+
+        await Comment.deleteOne({ id: req.params.id });
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                message: "Comment deleted successfully"
+            }
+        });       
     } catch (error) {
         next(error);
     }
