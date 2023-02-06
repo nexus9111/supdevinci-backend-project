@@ -1,5 +1,5 @@
 {
-  "name": "nodejs_boilerplate_rest_api",
+  "name": "study_backend_project",
   "version": "1.0.0",
   "description": "🚀 This is all you need as a NodeJS rest API simple and secure boilerplate",
   "main": "server.js",
@@ -11,14 +11,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nexus9111/nodejs_boilerplate_rest_api.git"
+    "url": "git+https://github.com/nexus9111/supdevinci-backend-project"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/nexus9111/nodejs_boilerplate_rest_api/issues"
+    "url": "https://github.com/nexus9111/supdevinci-backend-project/issues"
   },
-  "homepage": "https://github.com/nexus9111/nodejs_boilerplate_rest_api#readme",
+  "homepage": "https://github.com/nexus9111/supdevinci-backend-project#readme",
   "dependencies": {
     "bcrypt": "^5.1.0",
     "body-parser": "^1.20.1",
