@@ -70,7 +70,7 @@ exports.create = async (req, res, next) => {
             throw new Error("Please provide title and content");
         }
 
-        if (req.body.title.length < 5 || req.body.title.length > 100) {
+        if (!articleUtils._title_validator(req.body.title)) {
             req.statusCode = 400;
             throw new Error("Title must be between 5 and 100 characters");
         }
@@ -119,7 +119,7 @@ exports.delete = async (req, res, next) => {
             data: {
                 message: "Article deleted successfully"
             }
-        });       
+        });
     } catch (error) {
         next(error);
     }
@@ -139,6 +139,10 @@ exports.update = async (req, res, next) => {
         }
 
         if (req.body.title) {
+            if (!articleUtils._title_validator(req.body.title)) {
+                req.statusCode = 400;
+                throw new Error("Title must be between 5 and 100 characters");
+            }
             article.title = req.body.title;
         }
 
@@ -154,7 +158,7 @@ exports.update = async (req, res, next) => {
                 message: "Article updated successfully",
                 article: articleUtils.safeArticle(article)
             }
-        });       
+        });
     } catch (error) {
         next(error);
     }
