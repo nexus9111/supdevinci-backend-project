@@ -8,6 +8,7 @@ const logger = winston.createLogger({
         winston.format.timestamp(),
         winston.format.json()
     ),
+    defaultMeta: { service: 'supdevinci-backend-project' },
     transports: [
         new winston.transports.Console(),
     ],
