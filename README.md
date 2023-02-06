@@ -1,17 +1,4 @@
-# nodejs_boilerplate_rest_api
-
-🚀 This is all you need as a NodeJS rest API simple and secure boilerplate
-
-## ℹ️ Informations
-
-This api include:
-
-- 📝 Loggers (winston)
-- 📚 MongoDB database
-- 🪞 PROD and DEV environment
-- 🛡 High level of protection (HTTP headers, anti-dos, ip filter, protected routes)
-- 🔀 Express routing
-- ✨ Structured api
+# 💻 Solution for a study backend project.
 
 ## 🔎 Requirements
 
