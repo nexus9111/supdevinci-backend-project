@@ -5,7 +5,7 @@ const securityUtils = require("../utils/securityUtils");
 
 const controller = require('../controllers/blogController');
 
-router.get('/comments/:id', controller.getComment);
+router.get('/comments/:id', controller.getCommentsFromArticle);
 router.post('/comments/:id', securityUtils.authorize([]), controller.comment);
 router.delete('/comments/:id', securityUtils.authorize([]), controller.deleteComment);
 

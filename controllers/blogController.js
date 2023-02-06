@@ -4,6 +4,7 @@ const Comment = require("../models/commentModels");
 const logger = require("../config/logger");
 
 const articleUtils = require("../utils/articleUtils");
+const userUtils = require("../utils/userUtils");
 
 exports.coming = (req, res, next) => {
     try {
@@ -24,13 +25,7 @@ exports.getAll = async (req, res, next) => {
         if (author) {
             dbQuery = { author: author };
         }
-
-        let articles = await Article.find(dbQuery)
-            .skip(skip)
-            .limit(pageSize)
-            .sort({ createdAt: -1 })
-            .select('-__v')
-            .select('-_id');
+        let articles = await articleUtils.getArticles(pageSize, skip, dbQuery);
 
         return res.status(200).json({
             success: true,
@@ -45,18 +40,12 @@ exports.getAll = async (req, res, next) => {
 
 exports.getOne = async (req, res, next) => {
     try {
-        let article = await Article.findOne({ id: req.params.id })
-            .select('-__v')
-            .select('-_id');
-        if (!article) {
-            req.statusCode = 404;
-            throw new Error("Article not found");
-        }
+        let article = await articleUtils.getOneArticle({ id: req.params.id });
 
         return res.status(200).json({
             success: true,
             data: {
-                article: article
+                article: articleUtils.safeArticle(article)
             }
         });
     } catch (error) {
@@ -71,10 +60,7 @@ exports.create = async (req, res, next) => {
             throw new Error("Please provide title and content");
         }
 
-        if (!articleUtils._title_validator(req.body.title)) {
-            req.statusCode = 400;
-            throw new Error("Title must be between 5 and 100 characters");
-        }
+        articleUtils.checkArticleTitle(req.body.title)
 
         let article = new Article({
             author: req.connectedUser.id,
@@ -102,16 +88,9 @@ exports.create = async (req, res, next) => {
 
 exports.delete = async (req, res, next) => {
     try {
-        let article = await Article.findOne({ id: req.params.id });
-        if (!article) {
-            req.statusCode = 404;
-            throw new Error("Article not found");
-        }
+        let article = await articleUtils.getOneArticle({ id: req.params.id });
 
-        if (article.author != req.connectedUser.id && req.connectedUser.role != "admin" && req.connectedUser.role != "superadmin") {
-            req.statusCode = 403;
-            throw new Error("You are not allowed to delete this article");
-        }
+        userUtils.checkCanUpdateArticle(article, req.connectedUser);
 
         await Article.deleteOne({ id: req.params.id });
 
@@ -128,31 +107,22 @@ exports.delete = async (req, res, next) => {
 
 exports.update = async (req, res, next) => {
     try {
-        let article = await Article.findOne({ id: req.params.id });
-        if (!article) {
-            req.statusCode = 404;
-            throw new Error("Article not found");
-        }
+        let article = await articleUtils.getOneArticle({ id: req.params.id });
 
-        if (article.author != req.connectedUser.id && req.connectedUser.role != "admin" && req.connectedUser.role != "superadmin") {
-            req.statusCode = 403;
-            throw new Error("You are not allowed to update this article");
-        }
+        userUtils.checkCanUpdateArticle(article, req.connectedUser);
 
         if (req.body.title) {
-            if (!articleUtils._title_validator(req.body.title)) {
-                req.statusCode = 400;
-                throw new Error("Title must be between 5 and 100 characters");
-            }
+            articleUtils.checkArticleTitle(req.body.title)
             article.title = req.body.title;
         }
 
+        
         if (req.body.content) {
             article.content = req.body.content;
         }
-
+        
         article = await article.save();
-
+        
         return res.status(200).json({
             success: true,
             data: {
@@ -165,13 +135,27 @@ exports.update = async (req, res, next) => {
     }
 }
 
+exports.getCommentsFromArticle = async (req, res, next) => {
+    try {
+        let comments = await Comment.find({ article: req.params.id })
+            .select('-__v')
+            .select('-_id')
+            .sort({ date: -1 });
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                comments: comments
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
 exports.comment = async (req, res, next) => {
     try {
-        let article = await Article.findOne({ id: req.params.id });
-        if (!article) {
-            req.statusCode = 404;
-            throw new Error("Article not found");
-        }
+        let article = await articleUtils.getOneArticle({ id: req.params.id });
 
         if (!req.body.comment) {
             req.statusCode = 400;
@@ -205,24 +189,6 @@ exports.comment = async (req, res, next) => {
     }
 }
 
-exports.getComment = async (req, res, next) => {
-    try {
-        let comments = await Comment.find({ article: req.params.id })
-            .select('-__v')
-            .select('-_id')
-            .sort({ date: -1 });
-        
-        return res.status(200).json({
-            success: true,
-            data: {
-                comments: comments
-            }
-        });
-    } catch (error) {
-        next(error);
-    }
-}
-
 exports.deleteComment = async (req, res, next) => {
     try {
         let comment = await Comment.findOne({ id: req.params.id });
@@ -231,10 +197,7 @@ exports.deleteComment = async (req, res, next) => {
             throw new Error("Comment not found");
         }
 
-        if (comment.author != req.connectedUser.id && req.connectedUser.role != "admin" && req.connectedUser.role != "superadmin") {
-            req.statusCode = 403;
-            throw new Error("You are not allowed to delete this comment");
-        }
+        userUtils.checkCanUpdateComment(comment, req.connectedUser);
 
         await Comment.deleteOne({ id: req.params.id });
 
@@ -243,7 +206,7 @@ exports.deleteComment = async (req, res, next) => {
             data: {
                 message: "Comment deleted successfully"
             }
-        });       
+        });
     } catch (error) {
         next(error);
     }
