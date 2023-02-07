@@ -50,6 +50,7 @@ const routes = [
 
 routes.forEach(route => {
     app.use(route.path, route.router);
+    logger.info("Route loaded", { "path": route.path });
 });
 
 app.use((error, req, res, next) => {
