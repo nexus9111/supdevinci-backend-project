@@ -125,3 +125,31 @@ exports.profile = async (req, res, next) => {
         next(error);
     }
 }
+
+exports.deleteProfile = async (req, res, next) => {
+    try {
+        let user = await User.findOne({ id: req.params.id });
+        if (!user) {
+            req.statusCode = 400;
+            throw new Error("User not found");
+        }
+
+        if (!userUtils.canModifyProfile(user, req.connectedUser)) {
+            logger.warning(`User ${req.connectedUser.username} tried to delete ${user.username} profile`);
+            req.statusCode = 403;
+            throw new Error("You can't delete this profile");
+        }
+        
+        logger.info(`User ${req.connectedUser.username} deleted ${user.username} profile`);
+        await user.remove();
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                message: "Profile deleted",
+            }
+        });
+    } catch (error) {
+        next(error);
+    }
+}

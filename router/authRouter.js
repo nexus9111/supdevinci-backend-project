@@ -10,5 +10,6 @@ router.post('/register', controller.register);
 
 // you can use this to protect your route
 router.get('/profile', securityUtils.authorize([]), controller.profile);
+router.delete('/:id', securityUtils.authorize([]), controller.deleteProfile);
 
 module.exports = router;

@@ -7,7 +7,7 @@ exports.safeArticle = (article) => {
     return safeUser;
 }
 
-exports.checkArticleTitle = (title) => {
+exports.checkArticleTitle = (req, title) => {
     if (title.length >= 5 && title.length <= 100) {
         return true;
     }
@@ -15,7 +15,7 @@ exports.checkArticleTitle = (title) => {
     throw new Error("Title must be between 5 and 100 characters");
 }
 
-exports.getOneArticle = async (query = {}) => {
+exports.getOneArticle = async (req, query = {}) => {
     let article = await Article.findOne(query)
         .select('-__v');
 

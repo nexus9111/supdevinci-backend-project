@@ -40,7 +40,7 @@ exports.getAll = async (req, res, next) => {
 
 exports.getOne = async (req, res, next) => {
     try {
-        let article = await articleUtils.getOneArticle({ id: req.params.id });
+        let article = await articleUtils.getOneArticle(req, { id: req.params.id });
 
         return res.status(200).json({
             success: true,
@@ -60,7 +60,7 @@ exports.create = async (req, res, next) => {
             throw new Error("Please provide title and content");
         }
 
-        articleUtils.checkArticleTitle(req.body.title)
+        articleUtils.checkArticleTitle(req, req.body.title)
 
         let article = new Article({
             author: req.connectedUser.id,
@@ -88,7 +88,7 @@ exports.create = async (req, res, next) => {
 
 exports.delete = async (req, res, next) => {
     try {
-        let article = await articleUtils.getOneArticle({ id: req.params.id });
+        let article = await articleUtils.getOneArticle(req, { id: req.params.id });
 
         userUtils.checkCanUpdateArticle(article, req.connectedUser);
 
@@ -107,7 +107,7 @@ exports.delete = async (req, res, next) => {
 
 exports.update = async (req, res, next) => {
     try {
-        let article = await articleUtils.getOneArticle({ id: req.params.id });
+        let article = await articleUtils.getOneArticle(req, { id: req.params.id });
 
         userUtils.checkCanUpdateArticle(article, req.connectedUser);
 
@@ -155,8 +155,7 @@ exports.getCommentsFromArticle = async (req, res, next) => {
 
 exports.comment = async (req, res, next) => {
     try {
-        let article = await articleUtils.getOneArticle({ id: req.params.id });
-
+        let article = await articleUtils.getOneArticle(req, { id: req.params.id });
         if (!req.body.comment) {
             req.statusCode = 400;
             throw new Error("Please provide content");
