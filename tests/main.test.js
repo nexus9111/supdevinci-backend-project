@@ -204,6 +204,20 @@ describe("Testing the main API", () => {
         expect(responseAllBlogsWithPageSizeAndPagination.statusCode).toBe(200);
         expect(responseAllBlogsWithPageSizeAndPagination.body.data.articles.length).toBe(2);
     });
+
+    test("🧪 Edit a blog", async () => {
+        const response = await request(app).put(`/blogs/${articleId}`).set("Authorization", userToken).send({
+            title: article.title + " foo",
+        });
+        expect(response.statusCode).toBe(200);
+    });
+    
+    test("🧪 Edit not existing blog", async () => {
+        const response = await request(app).put(`/blogs/unexistedId`).set("Authorization", userToken).send({
+            title: article.title + " foo",
+        });
+        expect(response.statusCode).toBe(404);
+    });
     
     test("🧪 Main article updated date change after editing", async () => {
         const response = await request(app).get(`/blogs/${articleId}`);
