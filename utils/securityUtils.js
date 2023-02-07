@@ -20,11 +20,13 @@ exports.isPasswordValid = (password) => {
 const getConnectedUser = async (req) => {
     let token = req.headers.authorization;
     if (!token) {
+        req.statusCode = 401;
         throw new Error("No token provided");
     };
 
     let user = await User.findOne({ "tokens.token": token }).select('-__v');
     if (!user) {
+        req.statusCode = 401;
         throw new Error("No user found");
     }
 
@@ -36,6 +38,7 @@ exports.authorize = (roles = []) => async (req, res, next) => {
         await getConnectedUser(req);
 
         if (req.connectedUser.role === "banned") {
+            req.statusCode = 401;
             throw new Error("Unauthorized");
         }
             
@@ -44,6 +47,7 @@ exports.authorize = (roles = []) => async (req, res, next) => {
 
         let now = new Date();
         if (!goodToken.expires || now > goodToken.expires) {
+            req.statusCode = 401;
             throw new Error("Token expired");
         }
         

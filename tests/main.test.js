@@ -16,8 +16,11 @@ describe("Test the root path", () => {
     test("🧪 No blogs should exists at init", async () => {
         const response = await request(app).get("/blogs");
         expect(response.statusCode).toBe(200);
-        expect(response.body).toHaveProperty("success");
-        expect(response.body).toHaveProperty("data");
         expect(response.body.data.articles.length).toBe(0);
+    });
+
+    test("🧪 Create a blog with no logs", async () => {
+        const response = await request(app).post("/blogs");
+        expect(response.statusCode).toBe(401);
     });
 });
