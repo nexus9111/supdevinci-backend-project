@@ -114,7 +114,7 @@ exports.update = async (req, res, next) => {
         userUtils.checkCanUpdateArticle(article, req.connectedUser);
 
         if (req.body.title) {
-            articleUtils.checkArticleTitle(req.body.title)
+            articleUtils.checkArticleTitle(req, req.body.title)
             article.title = req.body.title;
         }
 
@@ -123,7 +123,9 @@ exports.update = async (req, res, next) => {
             article.content = req.body.content;
         }
 
-        article = await article.save();
+        article.lastUpdated = new Date();
+
+        await Article.updateOne({ id: req.params.id }, article);
 
         return res.status(200).json({
             success: true,

@@ -18,10 +18,15 @@ const blogSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    lastUpdated: {
+        type: Date,
+        default: null
+    },
 });
 
 blogSchema.pre("save", function(next) {
     this.id = uuidv4();
+    this.lastUpdated = new Date();
     next(); 
 });
 

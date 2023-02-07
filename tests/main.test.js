@@ -204,6 +204,23 @@ describe("Testing the main API", () => {
         expect(responseAllBlogsWithPageSizeAndPagination.statusCode).toBe(200);
         expect(responseAllBlogsWithPageSizeAndPagination.body.data.articles.length).toBe(2);
     });
+    
+    test("🧪 Test main article updated date change after editing", async () => {
+        const response = await request(app).get(`/blogs/${articleId}`);
+        expect(response.statusCode).toBe(200);
+        let beforeEditDate = response.body.data.article.lastUpdated;
+        const responseEdit = await request(app).put(`/blogs/${articleId}`).set("Authorization", userToken).send({
+            title: article.title + " edited",
+            content: article.content
+        });
+        expect(responseEdit.statusCode).toBe(200);
+        const responseAfterEdit = await request(app).get(`/blogs/${articleId}`);
+        expect(responseAfterEdit.statusCode).toBe(200);
+        let afterEditDate = responseAfterEdit.body.data.article.lastUpdated;
+        expect(beforeEditDate).not.toBe(afterEditDate);
+        expect(responseAfterEdit.body.data.article.title).toBe(article.title + " edited");
+    });
+            
 
     test("🧪 Delete a comment", async () => {
         const response = await request(app).delete(`/blogs/comments/${commentId}`).set("Authorization", userToken);
