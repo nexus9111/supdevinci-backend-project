@@ -167,4 +167,5 @@ dist
 
 .env.production
 .env.development
+.env.test
 .DS_Store
