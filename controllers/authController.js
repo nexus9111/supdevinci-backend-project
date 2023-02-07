@@ -1,6 +1,7 @@
 const validator = require("email-validator");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { v4: uuidv4 } = require('uuid');
 
 const { JWT_SECRET } = require("../config/vars");
 const logger = require("../config/logger");
@@ -46,6 +47,7 @@ exports.register = async (req, res, next) => {
         let hash = await bcrypt.hash(req.body.password, SALT_ROUNDS);
 
         let newUser = new User({
+            id: uuidv4(),
             username: req.body.username,
             password: hash,
             email: req.body.email.toLowerCase()
