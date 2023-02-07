@@ -1,3 +1,5 @@
+const { v4: uuidv4 } = require('uuid');
+
 const Article = require("../models/articleModels");
 const Comment = require("../models/commentModels");
 
@@ -63,6 +65,7 @@ exports.create = async (req, res, next) => {
         articleUtils.checkArticleTitle(req, req.body.title)
 
         let article = new Article({
+            id: uuidv4(),
             author: req.connectedUser.id,
             title: req.body.title,
             content: req.body.content

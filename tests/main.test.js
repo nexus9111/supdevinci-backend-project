@@ -1,4 +1,6 @@
 const request = require("supertest");
+const { v4: uuidv4 } = require('uuid');
+
 const mongo = require("../config/mongo");
 const app = require("../app");
 
@@ -179,6 +181,31 @@ describe("Testing the main API", () => {
         expect(response.body.data.comments.length).toBe(1);
     });
 
+    test("🧪 Create random article to test pagination", async () => {
+        for (let i = 0; i < 10; i++) {
+            let title = uuidv4().replace(/-/g, "");
+            let content = uuidv4().replace(/-/g, "");
+            const response = await request(app).post("/blogs").set("Authorization", userToken).send({
+                title,
+                content
+            });
+            console.log(title, content)
+            console.log(response.body);
+            expect(response.statusCode).toBe(201);
+        }
+
+        const responseAllBlogs = await request(app).get("/blogs");
+        expect(responseAllBlogs.statusCode).toBe(200);
+        expect(responseAllBlogs.body.data.articles.length).toBe(10);
+
+        const responseAllBlogsPage2 = await request(app).get("/blogs?page=2");
+        expect(responseAllBlogsPage2.statusCode).toBe(200);
+        expect(responseAllBlogsPage2.body.data.articles.length).toBe(1);
+
+        const responseAllBlogsWithPageSizeAndPagination = await request(app).get("/blogs?page=3&pageSize=2");
+        expect(responseAllBlogsWithPageSizeAndPagination.statusCode).toBe(200);
+        expect(responseAllBlogsWithPageSizeAndPagination.body.data.articles.length).toBe(2);
+    });
 
     test("🧪 Delete a comment", async () => {
         const response = await request(app).delete(`/blogs/comments/${commentId}`).set("Authorization", userToken);
@@ -193,5 +220,11 @@ describe("Testing the main API", () => {
     test("🧪 Delete a user", async () => {
         const response = await request(app).delete(`/users/${userId}`).set("Authorization", userToken);
         expect(response.statusCode).toBe(200);
+    });
+
+    test("🧪 Should have 0 blog", async () => {
+        const response = await request(app).get("/blogs");
+        expect(response.statusCode).toBe(200);
+        expect(response.body.data.articles.length).toBe(0);
     });
 });
