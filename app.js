@@ -34,6 +34,17 @@ app.get("/", (req, res) => {
     });
 });
 
+// easter egg
+app.get("/easter-egg", (req, res) => {
+    res.status(418).json({
+        "success": true,
+        "data": {
+            "message": "Congratulations! You've stumbled upon a secret path in the API. Take a break from your usual requests and enjoy this little Easter egg. May your code be filled with joy and your bugs be minimal.",
+            "website": "https://www.joss-coupet.eu/",
+            "origin": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/418"
+        }
+    });
+});
 
 app.use("/users", userRouter);
 app.use("/blogs", blogRouter);
