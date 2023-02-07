@@ -11,7 +11,7 @@ const logger = winston.createLogger({
     defaultMeta: { service: 'supdevinci-backend-project' },
     transports: [
         new winston.transports.Console(),
-    ],
+    ], 
 });
 
 module.exports = logger;

@@ -27,7 +27,9 @@ $ cp .env.example .env.production
 $ npm i
 ```
 
-- now you can edit `.env.development` and `.env.production` files to fit your needs.
+- now you can edit `.env.development`, `.env.production` and `.env.test` files to fit your needs.
+
+- ⚠️ Please don't use the same database uri for development and test env.
 
 ## 🚀 Run
 
