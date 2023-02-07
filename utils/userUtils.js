@@ -26,7 +26,7 @@ exports.checkCanUpdateComment = (comment, user) => {
 }
 
 const canUpdate = (content, user) => {
-    if (content.author == user.id || user.role == "admin" || user.role == "superadmin") {
+    if (content.author === user.id || user.role === "admin" || user.role === "superadmin") {
         return true;
     }
     
