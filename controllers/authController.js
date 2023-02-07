@@ -4,6 +4,7 @@ const jwt = require("jsonwebtoken");
 
 const { JWT_SECRET } = require("../config/vars");
 const logger = require("../config/logger");
+const errors = require('../config/errors');
 
 const User = require("../models/userModels");
 const Article = require("../models/articleModels");
@@ -19,19 +20,19 @@ exports.register = async (req, res, next) => {
         //check body
         if (!req.body.email || !req.body.password || !req.body.username) {
             req.statusCode = 400;
-            throw new Error("Please provide email, password and username");
+            throw new Error(errors.errors.BAD_BODY + " - missing email, password or username");
         }
 
         //check if email is valid
         if (!validator.validate(req.body.email)) {
             req.statusCode = 400;
-            throw new Error("Please provide a valid email");
+            throw new Error(errors.errors.BAD_BODY + " - invalid email");
         }
 
         //check if password is valid
         if (!securityUtils.isPasswordValid(req.body.password)) {
             req.statusCode = 400;
-            throw new Error("Password is not valid");
+            throw new Error(errors.errors.BAD_BODY + " - invalid password");
         }
 
         //check if email is already registered from email or username
@@ -43,7 +44,7 @@ exports.register = async (req, res, next) => {
         });
         if (user) {
             req.statusCode = 400;
-            throw new Error("Email or username is already registered");
+            throw new Error(errors.errors.CONFLICT + " - email or username already registered");
         }
 
         //hash password
@@ -75,19 +76,19 @@ exports.login = async (req, res, next) => {
     try {
         if (!req.body.email || !req.body.password) {
             req.statusCode = 400;
-            throw new Error("Please provide email and password");
+            throw new Error(errors.errors.BAD_BODY + " - missing email or password");
         }
 
         let user = await User.findOne({ email: req.body.email });
         if (!user) {
             req.statusCode = 400;
-            throw new Error("Email is not registered");
+            throw new Error(errors.errors.BAD_CREDENTIALS);
         }
 
         let isPasswordCorrect = await bcrypt.compare(req.body.password, user.password);
         if (!isPasswordCorrect) {
             req.statusCode = 403;
-            throw new Error("Credentials are not correct");
+            throw new Error(errors.errors.BAD_CREDENTIALS);
         }
 
         //generate token
@@ -125,14 +126,14 @@ exports.deleteProfile = async (req, res, next) => {
     try {
         let user = await User.findOne({ id: req.params.id });
         if (!user) {
-            req.statusCode = 400;
-            throw new Error("User not found");
+            req.statusCode = 404;
+            throw new Error(errors.errors.NOT_FOUND + " - user not found");
         }
 
         if (!userUtils.canModifyProfile(user, req.connectedUser)) {
             logger.warning(`User ${req.connectedUser.username} tried to delete ${user.username} profile`);
             req.statusCode = 403;
-            throw new Error("You can't delete this profile");
+            throw new Error(errors.errors.FORBIDDEN + " - you can't delete this profile");
         }
 
         logger.info(`User ${req.connectedUser.username} deleted ${user.username} profile`);

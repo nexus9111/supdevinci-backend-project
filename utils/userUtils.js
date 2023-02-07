@@ -1,3 +1,5 @@
+const errors = require('../config/errors');
+
 exports.safeUser = (user) => {
     const safeUser = user.toObject();
     delete safeUser.password;
@@ -13,7 +15,7 @@ exports.checkCanUpdateArticle = (article, user) => {
     }
     
     req.statusCode = 403;
-    throw new Error("You are not allowed to update this article");
+    throw new Error(errors.errors.FORBIDDEN + " - not allowed to update this article");
 }
 
 exports.checkCanUpdateComment = (comment, user) => {
@@ -22,7 +24,7 @@ exports.checkCanUpdateComment = (comment, user) => {
     }
     
     req.statusCode = 403;
-    throw new Error("You are not allowed to update this comment");
+    throw new Error(errors.errors.FORBIDDEN + " - not allowed to update this comment");
 }
 
 const canUpdate = (content, user) => {

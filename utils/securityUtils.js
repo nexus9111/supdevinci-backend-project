@@ -3,6 +3,7 @@ const jwt = require("jsonwebtoken");
 
 const { JWT_SECRET } = require("../config/vars");
 const logger = require("../config/logger");
+const errors = require('../config/errors');
 
 const User = require("../models/userModels");
 
@@ -26,27 +27,27 @@ const getConnectedUser = async (req) => {
     let token = req.headers.authorization;
     if (!token) {
         req.statusCode = 401;
-        throw new Error("No token provided");
+        throw new Error(errors.errors.UNAUTHORIZED + " - missing token");
     };
 
     // decode token
     let decoded = jwt.verify(token, JWT_SECRET);
     if (!decoded) {
         req.statusCode = 401;
-        throw new Error("Invalid token");
+        throw new Error(errors.errors.UNAUTHORIZED + " - invalid token");
     }
 
     let now = new Date();
     if (now > decoded.expires) {
         req.statusCode = 401;
-        throw new Error("Token expired");
+        throw new Error(errors.errors.UNAUTHORIZED + " - token expired");
     }
     
     let user = await User.findOne({ id: decoded.id }).select('-__v');
 
     if (!user) {
         req.statusCode = 401;
-        throw new Error("No user found");
+        throw new Error(errors.errors.UNAUTHORIZED + " - user with given token not found");
     }
 
     req.connectedUser = user;
@@ -58,7 +59,7 @@ exports.authorize = (roles = []) => async (req, res, next) => {
 
         if (req.connectedUser.role === "banned") {
             req.statusCode = 401;
-            throw new Error("Unauthorized");
+            throw new Error(errors.errors.UNAUTHORIZED);
         }
         
         if (req.connectedUser.role === "superadmin") {
@@ -66,7 +67,7 @@ exports.authorize = (roles = []) => async (req, res, next) => {
         }
 
         if (roles.length >= 1 && !roles.includes(req.connectedUser.role)) {
-            throw new Error("Unauthorized");
+            throw new Error(errors.errors.UNAUTHORIZED);
         }
 
         next();

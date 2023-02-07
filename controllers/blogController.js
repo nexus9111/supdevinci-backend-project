@@ -2,17 +2,10 @@ const Article = require("../models/articleModels");
 const Comment = require("../models/commentModels");
 
 const logger = require("../config/logger");
+const errors = require('../config/errors');
 
 const articleUtils = require("../utils/articleUtils");
 const userUtils = require("../utils/userUtils");
-
-exports.coming = (req, res, next) => {
-    try {
-        throw new Error("Coming soon");
-    } catch (error) {
-        next(error);
-    }
-}
 
 exports.getAll = async (req, res, next) => {
     try {
@@ -57,7 +50,7 @@ exports.create = async (req, res, next) => {
     try {
         if (!req.body.title || !req.body.content) {
             req.statusCode = 400;
-            throw new Error("Please provide title and content");
+            throw new Error(errors.errors.BAD_BODY + " - missing title or content");
         }
 
         articleUtils.checkArticleTitle(req, req.body.title)
@@ -162,7 +155,7 @@ exports.comment = async (req, res, next) => {
         let article = await articleUtils.getOneArticle(req, { id: req.params.id });
         if (!req.body.comment) {
             req.statusCode = 400;
-            throw new Error("Please provide content");
+            throw new Error(errors.errors.BAD_BODY + " - missing comment");
         }
 
         let comment = new Comment({
@@ -197,7 +190,7 @@ exports.deleteComment = async (req, res, next) => {
         let comment = await Comment.findOne({ id: req.params.id });
         if (!comment) {
             req.statusCode = 404;
-            throw new Error("Comment not found");
+            throw new Error(errors.errors.NOT_FOUND + " - comment not found");
         }
 
         userUtils.checkCanUpdateComment(comment, req.connectedUser);

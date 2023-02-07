@@ -1,3 +1,5 @@
+const errors = require('../config/errors');
+
 const Article = require("../models/articleModels");
 
 exports.safeArticle = (article) => {
@@ -12,7 +14,7 @@ exports.checkArticleTitle = (req, title) => {
         return true;
     }
     req.statusCode = 400;
-    throw new Error("Title must be between 5 and 100 characters");
+    throw new Error(errors.errors.BAD_BODY + " - title must be between 5 and 100 characters");
 }
 
 exports.getOneArticle = async (req, query = {}) => {
@@ -21,7 +23,7 @@ exports.getOneArticle = async (req, query = {}) => {
 
     if (!article) {
         req.statusCode = 404;
-        throw new Error("Article not found");
+        throw new Error(errors.errors.NOT_FOUND + " - article not found");
     }
 
     return article;
