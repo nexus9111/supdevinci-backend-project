@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { v4: uuidv4 } = require('uuid');
 
 const blogSchema = new mongoose.Schema({
     id: {
@@ -17,6 +18,11 @@ const blogSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+});
+
+blogSchema.pre("save", function(next) {
+    this.id = uuidv4();
+    next(); 
 });
 
 

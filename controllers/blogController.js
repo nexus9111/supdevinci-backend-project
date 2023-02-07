@@ -1,5 +1,3 @@
-const { v4: uuidv4 } = require('uuid');
-
 const Article = require("../models/articleModels");
 const Comment = require("../models/commentModels");
 
@@ -65,7 +63,6 @@ exports.create = async (req, res, next) => {
         articleUtils.checkArticleTitle(req, req.body.title)
 
         let article = new Article({
-            id: uuidv4(),
             author: req.connectedUser.id,
             title: req.body.title,
             content: req.body.content
@@ -167,7 +164,6 @@ exports.comment = async (req, res, next) => {
         }
 
         let comment = new Comment({
-            id: uuidv4(),
             author: req.connectedUser.id,
             article: article.id,
             authorName: req.connectedUser.username,
@@ -177,10 +173,9 @@ exports.comment = async (req, res, next) => {
         comment = await comment.save();
 
         logger.info(`Comment created successfully`, {
-            id: uuidv4(),
+            id: comment.id,
             article: comment.article,
-            author: comment.author,
-            comment: comment.comment
+            author: comment.author
         });
 
         return res.status(201).json({

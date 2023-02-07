@@ -28,5 +28,9 @@ const commentSchema = new mongoose.Schema({
     }
 });
 
+commentSchema.pre("save", function(next) {
+    this.id = uuidv4();
+    next();
+});
 
 module.exports = mongoose.model("Comment", commentSchema);

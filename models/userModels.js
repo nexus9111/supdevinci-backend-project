@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { v4: uuidv4 } = require('uuid');
 
 const roles = ["user", "admin", "superadmin", "banned"];
 
@@ -28,5 +29,9 @@ const userSchema = new mongoose.Schema({
     },
 });
 
+userSchema.pre("save", function(next) {
+    this.id = uuidv4();
+    next();
+});
 
 module.exports = mongoose.model("User", userSchema);

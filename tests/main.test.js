@@ -189,8 +189,6 @@ describe("Testing the main API", () => {
                 title,
                 content
             });
-            console.log(title, content)
-            console.log(response.body);
             expect(response.statusCode).toBe(201);
         }
 
