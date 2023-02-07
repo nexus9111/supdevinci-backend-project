@@ -4,9 +4,6 @@ const logger = require('./config/logger');
 
 const routerUtils = require("./utils/routerUtils");
 
-const userRouter = require("./router/authRouter");
-const blogRouter = require("./router/blogRouter");
-
 app.all("*", function (req, res, next) {
     try {
         let ipAddress = req.ipInfo.ip.slice(0, 7) === "::ffff:" ? req.ipInfo.ip.slice(7) : req.ipInfo.ip;
@@ -46,8 +43,14 @@ app.get("/easter-egg", (req, res) => {
     });
 });
 
-app.use("/users", userRouter);
-app.use("/blogs", blogRouter);
+const routes = [
+    { path: "/users", router: require("./router/authRouter") },
+    { path: "/blogs", router: require("./router/blogRouter") }
+]
+
+routes.forEach(route => {
+    app.use(route.path, route.router);
+});
 
 app.use((error, req, res, next) => {
     statusCode = req.statusCode || 500;
