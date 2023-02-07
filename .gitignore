@@ -168,4 +168,6 @@ dist
 .env.production
 .env.development
 .env.test
+coverage
+coverage/
 .DS_Store

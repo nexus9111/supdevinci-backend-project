@@ -53,6 +53,8 @@ Run tests:
 $ npm run test
 ```
 
+- Actual test coverage: 86.77%
+
 ## ✒️ License:
 
 - Author: Joss C
