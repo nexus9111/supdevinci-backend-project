@@ -24,6 +24,7 @@ if `easy-install.sh` does not work:
 ```console
 $ cp .env.example .env.development
 $ cp .env.example .env.production
+$ cp .env.example .env.test
 $ npm i
 ```
 
@@ -44,6 +45,9 @@ $ npm run dev
 
 # Run with prod env:
 $ npm run prod
+
+# Run with test env:
+$ npm run test
 ```
 
 ## ✒️ License:
