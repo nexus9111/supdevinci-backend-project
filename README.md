@@ -47,13 +47,19 @@ $ npm run dev
 $ npm run prod
 ```
 
+## 🧪 Tests
+
 Run tests:
 
 ```console
 $ npm run test
 ```
 
-- Actual test coverage: 86.77%
+Get coverage:
+
+```console
+$ npm run coverage
+```
 
 ## ✒️ License:
 
