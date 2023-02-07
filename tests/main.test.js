@@ -205,7 +205,7 @@ describe("Testing the main API", () => {
         expect(responseAllBlogsWithPageSizeAndPagination.body.data.articles.length).toBe(2);
     });
     
-    test("🧪 Test main article updated date change after editing", async () => {
+    test("🧪 Main article updated date change after editing", async () => {
         const response = await request(app).get(`/blogs/${articleId}`);
         expect(response.statusCode).toBe(200);
         let beforeEditDate = response.body.data.article.lastUpdated;
@@ -220,7 +220,20 @@ describe("Testing the main API", () => {
         expect(beforeEditDate).not.toBe(afterEditDate);
         expect(responseAfterEdit.body.data.article.title).toBe(article.title + " edited");
     });
-            
+       
+    test("🧪 Main article updated date don't change at each getter", async () => {
+        const response = await request(app).get(`/blogs/${articleId}`);
+        expect(response.statusCode).toBe(200);
+        let beforeEditDate = response.body.data.article.lastUpdated;
+
+        // wait 1 sec
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
+        const responseAfterOneSec = await request(app).get(`/blogs/${articleId}`);
+        expect(responseAfterOneSec.statusCode).toBe(200);
+        let afterEditDate = responseAfterOneSec.body.data.article.lastUpdated;
+        expect(beforeEditDate).toBe(afterEditDate);
+    });
 
     test("🧪 Delete a comment", async () => {
         const response = await request(app).delete(`/blogs/comments/${commentId}`).set("Authorization", userToken);
