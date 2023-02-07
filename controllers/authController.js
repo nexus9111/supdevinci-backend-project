@@ -9,6 +9,8 @@ const securityUtils = require("../utils/securityUtils");
 const userUtils = require("../utils/userUtils");
 
 const User = require("../models/userModels");
+const Article = require("../models/articleModels");
+const Comment = require("../models/commentModels");
 
 const DELAY_ONE_DAY = 86_400_000;
 const SALT_ROUNDS = 10;
@@ -87,15 +89,6 @@ exports.login = async (req, res, next) => {
         //generate token
         let token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: "1d" });
 
-        //update user token
-        user.tokens.push({
-            token: token,
-            expires: Date.now() + DELAY_ONE_DAY
-        });
-
-        // delete all expired tokens from user
-        user.tokens = user.tokens.filter(t => t.expires > Date.now());
-
         await user.save();
 
         //send response
@@ -143,6 +136,10 @@ exports.deleteProfile = async (req, res, next) => {
         logger.info(`User ${req.connectedUser.username} deleted ${user.username} profile`);
         await user.remove();
 
+        // delete all articles of the user and all comments of the user
+        await Article.deleteMany({ author: user.id });
+        await Comment.deleteMany({ author: user.id });
+        
         return res.status(200).json({
             success: true,
             data: {

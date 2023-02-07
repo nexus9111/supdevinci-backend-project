@@ -94,6 +94,8 @@ exports.delete = async (req, res, next) => {
 
         await Article.deleteOne({ id: req.params.id });
 
+        await Comment.deleteMany({ article: req.params.id });
+
         return res.status(200).json({
             success: true,
             data: {

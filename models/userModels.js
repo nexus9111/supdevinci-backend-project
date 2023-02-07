@@ -28,16 +28,6 @@ const userSchema = new mongoose.Schema({
         default: uuidv4(),
         unique: true
     },
-    tokens: [{
-        token: {
-            type: String,
-            required: true
-        },
-        expires: {
-            type: Number,
-            required: true
-        }
-    }],
 });
 
 
