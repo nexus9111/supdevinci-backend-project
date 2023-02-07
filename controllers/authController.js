@@ -5,14 +5,13 @@ const jwt = require("jsonwebtoken");
 const { JWT_SECRET } = require("../config/vars");
 const logger = require("../config/logger");
 
-const securityUtils = require("../utils/securityUtils");
-const userUtils = require("../utils/userUtils");
-
 const User = require("../models/userModels");
 const Article = require("../models/articleModels");
 const Comment = require("../models/commentModels");
 
-const DELAY_ONE_DAY = 86_400_000;
+const securityUtils = require("../utils/securityUtils");
+const userUtils = require("../utils/userUtils");
+
 const SALT_ROUNDS = 10;
 
 exports.register = async (req, res, next) => {
@@ -36,7 +35,12 @@ exports.register = async (req, res, next) => {
         }
 
         //check if email is already registered from email or username
-        let user = await User.findOne({ $or: [{ email: req.body.email.toLowerCase() }, { username: req.body.username }] });
+        let user = await User.findOne({
+            $or: [
+                { email: req.body.email.toLowerCase().trim() },
+                { username: req.body.username }
+            ]
+        });
         if (user) {
             req.statusCode = 400;
             throw new Error("Email or username is already registered");
@@ -130,14 +134,14 @@ exports.deleteProfile = async (req, res, next) => {
             req.statusCode = 403;
             throw new Error("You can't delete this profile");
         }
-        
+
         logger.info(`User ${req.connectedUser.username} deleted ${user.username} profile`);
         await user.remove();
 
         // delete all articles of the user and all comments of the user
         await Article.deleteMany({ author: user.id });
         await Comment.deleteMany({ author: user.id });
-        
+
         return res.status(200).json({
             success: true,
             data: {

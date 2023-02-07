@@ -118,13 +118,13 @@ exports.update = async (req, res, next) => {
             article.title = req.body.title;
         }
 
-        
+
         if (req.body.content) {
             article.content = req.body.content;
         }
-        
+
         article = await article.save();
-        
+
         return res.status(200).json({
             success: true,
             data: {
