@@ -19,10 +19,10 @@ const comment = {
 
 describe("Testing the main API", () => {
 
-    let userToken = ""
-    let userId = ""
     let articleId = ""
     let commentId = ""
+    let userId = ""
+    let userToken = ""
 
     beforeAll(() => {
         mongo.connect();
@@ -104,6 +104,14 @@ describe("Testing the main API", () => {
             password: user.password
         });
         expect(response.statusCode).toBe(400);
+    });
+
+    test("🧪 Get user", async () => {
+        const response = await request(app).get(`/users/profile`).set("Authorization", userToken);
+        expect(response.statusCode).toBe(200);
+        expect(response.body.data.user.username).toBe(user.username);
+        expect(response.body.data.user.email).toBe(user.email);
+        expect(response.body.data.user.id).toBe(userId);
     });
 
     test("🧪 Create a blog", async () => {
