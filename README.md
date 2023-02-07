@@ -45,8 +45,11 @@ $ npm run dev
 
 # Run with prod env:
 $ npm run prod
+```
 
-# Run with test env:
+Run tests:
+
+```console
 $ npm run test
 ```
 
