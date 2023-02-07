@@ -8,7 +8,7 @@ exports.safeUser = (user) => {
 }
 
 exports.checkCanUpdateArticle = (article, user) => {
-    if (article.author == user.id || user.role == "admin" || user.role == "superadmin") {
+    if (canUpdate(article, user)) {
         return true;
     }
     
@@ -17,10 +17,18 @@ exports.checkCanUpdateArticle = (article, user) => {
 }
 
 exports.checkCanUpdateComment = (comment, user) => {
-    if (comment.author == user.id || user.role == "admin" || user.role == "superadmin") {
+    if (canUpdate(comment, user)) {
         return true;
     }
     
     req.statusCode = 403;
     throw new Error("You are not allowed to update this comment");
+}
+
+const canUpdate = (content, user) => {
+    if (content.author == user.id || user.role == "admin" || user.role == "superadmin") {
+        return true;
+    }
+    
+    return false
 }
