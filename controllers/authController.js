@@ -18,12 +18,10 @@ const SALT_ROUNDS = 10;
 
 exports.register = async (req, res, next) => {
     try {
-        //check body
         if (!req.body.email || !req.body.password || !req.body.username) {
             responseUtils.errorResponse(req, errors.errors.BAD_BODY, "missing email, password or username");
         }
 
-        //check if email is valid
         if (!validator.validate(req.body.email)) {
             responseUtils.errorResponse(req, errors.errors.BAD_BODY, "invalid email");
         }
@@ -41,6 +39,8 @@ exports.register = async (req, res, next) => {
             ]
         });
         if (user) {
+            // wait .3s to prevent brute force
+            await new Promise(resolve => setTimeout(resolve, 300));
             responseUtils.errorResponse(req, errors.errors.CONFLICT, "email or username already registered");
         }
 
@@ -57,12 +57,9 @@ exports.register = async (req, res, next) => {
 
         logger.info(`User ${user.username} registered successfully`);
 
-        return res.status(201).json({
-            success: true,
-            data: {
-                message: "User registered successfully",
-                user: userUtils.safeUser(user),
-            }
+        return responseUtils.successResponse(res, 201, {
+            message: "User registered successfully",
+            user: userUtils.safeUser(user),
         });
     } catch (error) {
         next(error);
@@ -88,14 +85,10 @@ exports.login = async (req, res, next) => {
         //generate token
         let token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: "1d" });
 
-        //send response
-        return res.status(200).json({
-            success: true,
-            data: {
-                message: "Login successful",
-                token: token,
-                user: userUtils.safeUser(user),
-            }
+        return responseUtils.successResponse(res, 200, {
+            message: "Login successful",
+            token: token,
+            user: userUtils.safeUser(user),
         });
     } catch (error) {
         next(error);
@@ -104,12 +97,9 @@ exports.login = async (req, res, next) => {
 
 exports.profile = async (req, res, next) => {
     try {
-        return res.status(200).json({
-            success: true,
-            data: {
-                message: "Profile",
-                user: userUtils.safeUser(req.connectedUser),
-            }
+        return responseUtils.successResponse(res, 200, {
+            message: "Profile fetched successfully",
+            user: userUtils.safeUser(req.connectedUser),
         });
     } catch (error) {
         next(error);
@@ -135,11 +125,8 @@ exports.deleteProfile = async (req, res, next) => {
         await Article.deleteMany({ author: user.id });
         await Comment.deleteMany({ author: user.id });
 
-        return res.status(200).json({
-            success: true,
-            data: {
-                message: "Profile deleted",
-            }
+        return responseUtils.successResponse(res, 200, {
+            message: "Profile deleted",
         });
     } catch (error) {
         next(error);

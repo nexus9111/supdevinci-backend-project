@@ -10,6 +10,12 @@ const user = {
     email: "test@gmail.com"
 };
 
+const maliciousUser = {
+    username: "Anonymous",
+    password: "FucKS0c13tY@",
+    email: "fsociety@protonmail.com"
+}
+
 const article = {
     title: "Les boxers de bordeaux sont les meilleurs au hockey",
     content: "Oui ce blog est tout a fait vrai !",
@@ -25,6 +31,9 @@ describe("Testing the main API", () => {
     let commentId = ""
     let userId = ""
     let userToken = ""
+
+    let maliciousUserId = ""
+    let maliciousUserToken = ""
 
     beforeAll(() => {
         mongo.connect();
@@ -76,6 +85,14 @@ describe("Testing the main API", () => {
         userId = response.body.data.user.id;
     });
 
+    test("🧪 Create a malicious user", async () => {
+        const response = await request(app).post("/users/register").send(maliciousUser);
+        expect(response.statusCode).toBe(201);
+        expect(response.body.data.user.username).toBe(maliciousUser.username);
+        expect(response.body.data.user.email).toBe(maliciousUser.email);
+        maliciousUserId = response.body.data.user.id;
+    });
+
     test("🧪 Create a user with same email", async () => {
         const response = await request(app).post("/users/register").send(user);
         expect(response.statusCode).toBe(409);
@@ -90,6 +107,17 @@ describe("Testing the main API", () => {
         expect(response.body.data.user.username).toBe(user.username);
         expect(response.body.data.user.email).toBe(user.email);
         userToken = response.body.data.token;
+    });
+
+    test("🧪 Login with malicious user", async () => {
+        const response = await request(app).post("/users/login").send({
+            email: maliciousUser.email,
+            password: maliciousUser.password
+        });
+        expect(response.statusCode).toBe(200);
+        expect(response.body.data.user.username).toBe(maliciousUser.username);
+        expect(response.body.data.user.email).toBe(maliciousUser.email);
+        maliciousUserToken = response.body.data.token;
     });
 
     test("🧪 Login with wrong password", async () => {
@@ -223,6 +251,13 @@ describe("Testing the main API", () => {
         });
         expect(response.statusCode).toBe(200);
     });
+
+    test("🧪 Edit a blog with malicious user", async () => {
+        const response = await request(app).put(`/blogs/${articleId}`).set("Authorization", maliciousUserToken).send({
+            title: "We are Legion. We do not forgive. We do not forget. Expect us.",
+        });
+        expect(response.statusCode).toBe(403);
+    });
     
     test("🧪 Edit not existing blog", async () => {
         const response = await request(app).put(`/blogs/unexistedId`).set("Authorization", userToken).send({
@@ -261,6 +296,11 @@ describe("Testing the main API", () => {
         expect(beforeEditDate).toBe(afterEditDate);
     });
 
+    test("🧪 Delete a with malicious user", async () => {
+        const response = await request(app).delete(`/blogs/${articleId}`).set("Authorization", maliciousUserToken);
+        expect(response.statusCode).toBe(403);
+    });
+
     test("🧪 Delete a comment", async () => {
         const response = await request(app).delete(`/blogs/comments/${commentId}`).set("Authorization", userToken);
         expect(response.statusCode).toBe(200);
@@ -271,8 +311,13 @@ describe("Testing the main API", () => {
         expect(response.statusCode).toBe(200);
     });
 
-    test("🧪 Delete a user", async () => {
+    test("🧪 Delete main user", async () => {
         const response = await request(app).delete(`/users/${userId}`).set("Authorization", userToken);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test("🧪 Delete malicious user", async () => {
+        const response = await request(app).delete(`/users/${maliciousUserId}`).set("Authorization", maliciousUserToken);
         expect(response.statusCode).toBe(200);
     });
 

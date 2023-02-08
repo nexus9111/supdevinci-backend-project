@@ -3,6 +3,7 @@ const app = require("./config/express");
 const logger = require('./config/logger');
 
 const routerUtils = require("./utils/routerUtils");
+const responseUtils = require("./utils/apiResponseUtils");
 
 app.all("*", function (req, res, next) {
     try {
@@ -22,24 +23,18 @@ app.all("*", function (req, res, next) {
 });
 
 app.get("/", (req, res) => {
-    res.status(200).json({
-        "success": true,
-        "data": {
-            "message": "Welcome to the API",
-            "origin": "https://github.com/nexus9111/nodejs_boilerplate_rest_api.git"
-        }
+    responseUtils.successResponse(res, 200, {
+        message: "Welcome to the API",
+        origin: "https://github.com/nexus9111/nodejs_boilerplate_rest_api.git"
     });
 });
 
 // easter egg
 app.get("/easter-egg", (req, res) => {
-    res.status(418).json({
-        "success": true,
-        "data": {
-            "message": "Congratulations! You've stumbled upon a secret path in the API. Take a break from your usual requests and enjoy this little Easter egg. May your code be filled with joy and your bugs be minimal.",
-            "website": "https://www.joss-coupet.eu/",
-            "origin": "https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/418"
-        }
+    responseUtils.successResponse(res, 418, {
+        message: "Congratulations! You've stumbled upon a secret path in the API. Take a break from your usual requests and enjoy this little Easter egg. May your code be filled with joy and your bugs be minimal.",
+        website: "https://www.joss-coupet.eu/",
+        statusCodeOrigin: "https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/418"
     });
 });
 

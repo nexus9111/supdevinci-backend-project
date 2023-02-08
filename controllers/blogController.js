@@ -21,11 +21,8 @@ exports.getAll = async (req, res, next) => {
         }
         let articles = await articleUtils.getArticles(pageSize, skip, dbQuery);
 
-        return res.status(200).json({
-            success: true,
-            data: {
-                articles: articles
-            }
+        return responseUtils.successResponse(res, 200, {
+            articles: articles
         });
     } catch (error) {
         next(error);
@@ -46,11 +43,8 @@ exports.getOne = async (req, res, next) => {
         article = articleUtils.safeArticle(article);
         article.comments = comments;
 
-        return res.status(200).json({
-            success: true,
-            data: {
-                article: article
-            }
+        return responseUtils.successResponse(res, 200, {
+            article: article
         });
     } catch (error) {
         next(error);
@@ -77,12 +71,9 @@ exports.create = async (req, res, next) => {
             title: article.title,
         });
 
-        return res.status(201).json({
-            success: true,
-            data: {
-                message: "Article created successfully",
-                article: articleUtils.safeArticle(article)
-            }
+        return responseUtils.successResponse(res, 201, {
+            message: "Article created successfully",
+            article: articleUtils.safeArticle(article)
         });
     } catch (error) {
         next(error);
@@ -99,11 +90,8 @@ exports.delete = async (req, res, next) => {
 
         await Comment.deleteMany({ article: req.params.id });
 
-        return res.status(200).json({
-            success: true,
-            data: {
-                message: "Article deleted successfully"
-            }
+        return responseUtils.successResponse(res, 200, {
+            message: "Article deleted successfully"
         });
     } catch (error) {
         next(error);
@@ -130,12 +118,9 @@ exports.update = async (req, res, next) => {
 
         await Article.updateOne({ id: req.params.id }, article);
 
-        return res.status(200).json({
-            success: true,
-            data: {
-                message: "Article updated successfully",
-                article: articleUtils.safeArticle(article)
-            }
+        return responseUtils.successResponse(res, 200, {
+            message: "Article updated successfully",
+            article: articleUtils.safeArticle(article)
         });
     } catch (error) {
         next(error);
@@ -149,11 +134,8 @@ exports.getCommentsFromArticle = async (req, res, next) => {
             .select('-_id')
             .sort({ date: -1 });
 
-        return res.status(200).json({
-            success: true,
-            data: {
-                comments: comments
-            }
+        return responseUtils.successResponse(res, 200, {
+            comments: comments
         });
     } catch (error) {
         next(error);
@@ -182,12 +164,9 @@ exports.comment = async (req, res, next) => {
             author: comment.author
         });
 
-        return res.status(201).json({
-            success: true,
-            data: {
-                message: "Comment created successfully",
-                comment: comment
-            }
+        return responseUtils.successResponse(res, 201, {
+            message: "Comment created successfully",
+            comment: comment
         });
     } catch (error) {
         next(error);
@@ -205,11 +184,8 @@ exports.deleteComment = async (req, res, next) => {
 
         await Comment.deleteOne({ id: req.params.id });
 
-        return res.status(200).json({
-            success: true,
-            data: {
-                message: "Comment deleted successfully"
-            }
+        return responseUtils.successResponse(res, 200, {
+            message: "Comment deleted successfully"
         });
     } catch (error) {
         next(error);
