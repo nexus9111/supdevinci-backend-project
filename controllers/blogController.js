@@ -6,6 +6,7 @@ const errors = require('../config/errors');
 
 const articleUtils = require("../utils/articleUtils");
 const userUtils = require("../utils/userUtils");
+const responseUtils = require("../utils/apiResponseUtils");
 
 exports.getAll = async (req, res, next) => {
     try {
@@ -59,8 +60,7 @@ exports.getOne = async (req, res, next) => {
 exports.create = async (req, res, next) => {
     try {
         if (!req.body.title || !req.body.content) {
-            req.statusCode = errors.errors.BAD_BODY.code;
-            throw new Error(errors.errors.BAD_BODY.message + " - missing title or content");
+            responseUtils.errorResponse(req, errors.errors.BAD_BODY, "missing title or content");
         }
 
         articleUtils.checkArticleTitle(req, req.body.title)
@@ -93,7 +93,7 @@ exports.delete = async (req, res, next) => {
     try {
         let article = await articleUtils.getOneArticle(req, { id: req.params.id });
 
-        userUtils.checkCanUpdateArticle(article, req.connectedUser);
+        userUtils.checkCanUpdateArticle(req, article, req.connectedUser);
 
         await Article.deleteOne({ id: req.params.id });
 
@@ -114,7 +114,7 @@ exports.update = async (req, res, next) => {
     try {
         let article = await articleUtils.getOneArticle(req, { id: req.params.id });
 
-        userUtils.checkCanUpdateArticle(article, req.connectedUser);
+        userUtils.checkCanUpdateArticle(req, article, req.connectedUser);
 
         if (req.body.title) {
             articleUtils.checkArticleTitle(req, req.body.title)
@@ -164,8 +164,7 @@ exports.comment = async (req, res, next) => {
     try {
         let article = await articleUtils.getOneArticle(req, { id: req.params.id });
         if (!req.body.comment) {
-            req.statusCode = errors.errors.BAD_BODY.code;
-            throw new Error(errors.errors.BAD_BODY.message + " - missing comment");
+            responseUtils.errorResponse(req, errors.errors.BAD_BODY, "missing comment");
         }
 
         let comment = new Comment({
@@ -199,11 +198,10 @@ exports.deleteComment = async (req, res, next) => {
     try {
         let comment = await Comment.findOne({ id: req.params.id });
         if (!comment) {
-            req.statusCode = errors.errors.NOT_FOUND.code;
-            throw new Error(errors.errors.NOT_FOUND.message + " - comment not found");
+            responseUtils.errorResponse(req, errors.errors.NOT_FOUND, "comment not found");
         }
 
-        userUtils.checkCanUpdateComment(comment, req.connectedUser);
+        userUtils.checkCanUpdateComment(req, comment, req.connectedUser);
 
         await Comment.deleteOne({ id: req.params.id });
 

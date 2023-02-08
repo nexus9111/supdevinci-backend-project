@@ -1,5 +1,7 @@
 const errors = require('../config/errors');
 
+const responseUtils = require("../utils/apiResponseUtils");
+
 exports.safeUser = (user) => {
     const safeUser = user.toObject();
     delete safeUser.password;
@@ -9,22 +11,20 @@ exports.safeUser = (user) => {
     return safeUser;
 }
 
-exports.checkCanUpdateArticle = (article, user) => {
+exports.checkCanUpdateArticle = (req, article, user) => {
     if (canUpdate(article, user)) {
         return true;
     }
     
-    req.statusCode = errors.errors.FORBIDDEN.code;
-    throw new Error(errors.errors.FORBIDDEN.message + " - not allowed to update this article");
+    responseUtils.errorResponse(req, errors.errors.FORBIDDEN, "not allowed to update this article");
 }
 
-exports.checkCanUpdateComment = (comment, user) => {
+exports.checkCanUpdateComment = (req, comment, user) => {
     if (canUpdate(comment, user)) {
         return true;
     }
     
-    req.statusCode = errors.errors.FORBIDDEN.code;
-    throw new Error(errors.errors.FORBIDDEN.message + " - not allowed to update this comment");
+    responseUtils.errorResponse(req, errors.errors.FORBIDDEN, "not allowed to update this comment");
 }
 
 const canUpdate = (content, user) => {

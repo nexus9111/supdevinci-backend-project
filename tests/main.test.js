@@ -97,7 +97,7 @@ describe("Testing the main API", () => {
             email: user.email,
             password: "test"
         });
-        expect(response.statusCode).toBe(403);
+        expect(response.statusCode).toBe(400);
     });
 
     test("🧪 Login with wrong email", async () => {

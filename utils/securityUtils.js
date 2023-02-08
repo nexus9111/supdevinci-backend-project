@@ -7,6 +7,8 @@ const errors = require('../config/errors');
 
 const User = require("../models/userModels");
 
+const responseUtils = require("../utils/apiResponseUtils");
+
 
 let schema = new passwordValidator();
 
@@ -26,28 +28,24 @@ exports.isPasswordValid = (password) => {
 const getConnectedUser = async (req) => {
     let token = req.headers.authorization;
     if (!token) {
-        req.statusCode = errors.errors.UNAUTHORIZED.code;
-        throw new Error(errors.errors.UNAUTHORIZED.message + " - missing token");
+        responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "missing token");
     };
 
     // decode token
     let decoded = jwt.verify(token, JWT_SECRET);
     if (!decoded) {
-        req.statusCode = errors.errors.UNAUTHORIZED.code;
-        throw new Error(errors.errors.UNAUTHORIZED.message + " - invalid token");
+        responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "invalid token");
     }
 
     let now = new Date();
     if (now > decoded.expires) {
-        req.statusCode = errors.errors.UNAUTHORIZED.code;
-        throw new Error(errors.errors.UNAUTHORIZED.message + " - token expired");
+        responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "token expired");
     }
     
     let user = await User.findOne({ id: decoded.id }).select('-__v');
 
     if (!user) {
-        req.statusCode = errors.errors.UNAUTHORIZED.code;
-        throw new Error(errors.errors.UNAUTHORIZED.message + " - user with given token not found");
+        responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "user with given token not found");
     }
 
     req.connectedUser = user;
@@ -58,8 +56,7 @@ exports.authorize = (roles = []) => async (req, res, next) => {
         await getConnectedUser(req);
 
         if (req.connectedUser.role === "banned") {
-            req.statusCode = errors.errors.UNAUTHORIZED.code;
-            throw new Error(errors.errors.UNAUTHORIZED.message);
+            responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "user is banned");
         }
         
         if (req.connectedUser.role === "superadmin") {
@@ -67,7 +64,7 @@ exports.authorize = (roles = []) => async (req, res, next) => {
         }
 
         if (roles.length >= 1 && !roles.includes(req.connectedUser.role)) {
-            throw new Error(errors.errors.errors.errors.UNAUTHORIZED);
+            responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "user is not authorized");
         }
 
         next();

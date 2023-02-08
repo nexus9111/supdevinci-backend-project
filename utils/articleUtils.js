@@ -2,6 +2,8 @@ const errors = require('../config/errors');
 
 const Article = require("../models/articleModels");
 
+const responseUtils = require("../utils/apiResponseUtils");
+
 exports.safeArticle = (article) => {
     const safeUser = article.toObject();
     delete safeUser.__v;
@@ -13,8 +15,7 @@ exports.checkArticleTitle = (req, title) => {
     if (title.length >= 5 && title.length <= 100) {
         return true;
     }
-    req.statusCode = errors.errors.BAD_BODY.code;
-    throw new Error(errors.errors.BAD_BODY.message + " - title must be between 5 and 100 characters");
+    responseUtils.errorResponse(req, errors.errors.BAD_BODY, "title must be between 5 and 100 characters");
 }
 
 exports.getOneArticle = async (req, query = {}) => {
@@ -22,8 +23,7 @@ exports.getOneArticle = async (req, query = {}) => {
         .select('-__v');
 
     if (!article) {
-        req.statusCode = errors.errors.NOT_FOUND.code;
-        throw new Error(errors.errors.NOT_FOUND.message + " - article not found");
+        responseUtils.errorResponse(req, errors.errors.NOT_FOUND, "article not found");
     }
 
     return article;
