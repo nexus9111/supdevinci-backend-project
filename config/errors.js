@@ -23,4 +23,8 @@ exports.errors = {
         message: "Bad credentials",
         code: 400
     },
+    NOT_ALREADY_IMPLEMENTED: {
+        message: "Not already implemented",
+        code: 501
+    },
 };

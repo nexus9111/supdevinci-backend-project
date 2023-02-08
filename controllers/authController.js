@@ -9,6 +9,7 @@ const errors = require("../config/errors");
 const User = require("../models/userModels");
 const Article = require("../models/articleModels");
 const Comment = require("../models/commentModels");
+const Person = require("../models/personModels");
 
 const securityUtils = require("../utils/securityUtils");
 const userUtils = require("../utils/userUtils");
@@ -16,51 +17,65 @@ const responseUtils = require("../utils/apiResponseUtils");
 
 const SALT_ROUNDS = 10;
 
+
+const registerPerson = async (req) => {
+    if (!req.body.email || !req.body.password || !req.body.username) {
+        responseUtils.errorResponse(req, errors.errors.BAD_BODY, "missing email, password or username");
+    }
+
+    if (!validator.validate(req.body.email)) {
+        responseUtils.errorResponse(req, errors.errors.BAD_BODY, "invalid email");
+    }
+
+    if (!securityUtils.isPasswordValid(req.body.password)) {
+        responseUtils.errorResponse(req, errors.errors.BAD_BODY, "invalid password");
+    }
+
+    let userWithExistingEmail = await Person.findOne({
+        $or: [
+            { email: req.body.email.toLowerCase().trim() },
+            { username: req.body.username }
+        ]
+    });
+    if (userWithExistingEmail) {
+        // wait .3s to prevent brute force
+        await new Promise(resolve => setTimeout(resolve, 300));
+        responseUtils.errorResponse(req, errors.errors.CONFLICT, "email or username already registered");
+    }
+
+    //hash password
+    let hashedPassword = await bcrypt.hash(req.body.password, SALT_ROUNDS);
+
+    let newUser = await Person.create({
+        username: req.body.username,
+        password: hashedPassword,
+        email: req.body.email.toLowerCase().trim(),
+    });
+
+    user = await newUser.save();
+
+    logger.info(`User ${user.username} registered successfully`);
+
+    return user;
+};
+
 exports.register = async (req, res, next) => {
     try {
-        if (!req.body.email || !req.body.password || !req.body.username) {
-            responseUtils.errorResponse(req, errors.errors.BAD_BODY, "missing email, password or username");
+        switch (req.body.kind) {
+            case "person":
+                let newPerson = await registerPerson(req);
+
+                return responseUtils.successResponse(res, 201, {
+                    message: "User registered successfully",
+                    user: userUtils.safeUser(newPerson),
+                });
+            case "company":
+                responseUtils.errorResponse(req, errors.errors.NOT_ALREADY_IMPLEMENTED, "this feature is not already implemented");
+                break;
+            default:
+                responseUtils.errorResponse(req, errors.errors.BAD_BODY, "missing kind");
+                break;
         }
-
-        if (!validator.validate(req.body.email)) {
-            responseUtils.errorResponse(req, errors.errors.BAD_BODY, "invalid email");
-        }
-
-        //check if password is valid
-        if (!securityUtils.isPasswordValid(req.body.password)) {
-            responseUtils.errorResponse(req, errors.errors.BAD_BODY, "invalid password");
-        }
-
-        //check if email is already registered from email or username
-        let user = await User.findOne({
-            $or: [
-                { email: req.body.email.toLowerCase().trim() },
-                { username: req.body.username }
-            ]
-        });
-        if (user) {
-            // wait .3s to prevent brute force
-            await new Promise(resolve => setTimeout(resolve, 300));
-            responseUtils.errorResponse(req, errors.errors.CONFLICT, "email or username already registered");
-        }
-
-        //hash password
-        let hash = await bcrypt.hash(req.body.password, SALT_ROUNDS);
-
-        let newUser = new User({
-            username: req.body.username,
-            password: hash,
-            email: req.body.email.toLowerCase()
-        });
-
-        user = await newUser.save();
-
-        logger.info(`User ${user.username} registered successfully`);
-
-        return responseUtils.successResponse(res, 201, {
-            message: "User registered successfully",
-            user: userUtils.safeUser(user),
-        });
     } catch (error) {
         next(error);
     }
@@ -72,7 +87,7 @@ exports.login = async (req, res, next) => {
             responseUtils.errorResponse(req, errors.errors.BAD_BODY, "missing email or password");
         }
 
-        let user = await User.findOne({ email: req.body.email });
+        let user = await Person.findOne({ email: req.body.email });
         if (!user) {
             responseUtils.errorResponse(req, errors.errors.BAD_CREDENTIALS, "invalid email or password");
         }
@@ -108,7 +123,7 @@ exports.profile = async (req, res, next) => {
 
 exports.deleteProfile = async (req, res, next) => {
     try {
-        let user = await User.findOne({ id: req.params.id });
+        let user = await Person.findOne({ id: req.params.id });
         if (!user) {
             responseUtils.errorResponse(req, errors.errors.NOT_FOUND, "user not found");
         }

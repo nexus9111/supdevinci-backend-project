@@ -6,6 +6,7 @@ const logger = require("../config/logger");
 const errors = require("../config/errors");
 
 const User = require("../models/userModels");
+const Person = require("../models/personModels");
 
 const responseUtils = require("../utils/apiResponseUtils");
 
@@ -42,7 +43,7 @@ const getConnectedUser = async (req) => {
         responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "token expired");
     }
     
-    let user = await User.findOne({ id: decoded.id }).select("-__v");
+    let user = await Person.findOne({ id: decoded.id }).select("-__v");
 
     if (!user) {
         responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "user with given token not found");

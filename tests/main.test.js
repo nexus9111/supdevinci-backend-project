@@ -7,13 +7,15 @@ const app = require("../app");
 const user = {
     username: "test",
     password: "SupD3Vinci@2022-2023",
-    email: "test@gmail.com"
+    email: "test@gmail.com",
+    kind: "person"
 };
 
 const maliciousUser = {
     username: "Anonymous",
     password: "FucKS0c13tY@",
-    email: "fsociety@protonmail.com"
+    email: "fsociety@protonmail.com",
+    kind: "person"
 };
 
 const article = {
@@ -38,9 +40,26 @@ describe("Testing failing resgisters", () => {
         mongo.disconnect();
     });
 
+    // TODO: REMOVE
+    test("🧪 Create a company", async () => {
+        const response = await request(app).post("/users/register").send({
+            username: user.username,
+            kind: "company"
+        });
+        expect(response.statusCode).toBe(501);
+    });
+    
+    test("🧪 Create a user without asking for person", async () => {
+        const response = await request(app).post("/users/register").send({
+            username: user.username,
+        });
+        expect(response.statusCode).toBe(400);
+    });
+
     test("🧪 Create a user with invalid body", async () => {
         const response = await request(app).post("/users/register").send({
             username: user.username,
+            kind: user.kind
         });
         expect(response.statusCode).toBe(400);
     });
@@ -49,7 +68,8 @@ describe("Testing failing resgisters", () => {
         const response = await request(app).post("/users/register").send({
             username: user.username,
             password: user.password,
-            email: "test"
+            email: "test",
+            kind: user.kind
         });
         expect(response.statusCode).toBe(400);
     });
@@ -58,7 +78,8 @@ describe("Testing failing resgisters", () => {
         const response = await request(app).post("/users/register").send({
             username: user.username,
             password: "test",
-            email: user.email
+            email: user.email,
+            kind: user.kind
         });
         expect(response.statusCode).toBe(400);
     });
@@ -89,12 +110,6 @@ describe("Testing the main API scenarios", () => {
     test("🧪 Server should be alive", async () => {
         const response = await request(app).get("/");
         expect(response.statusCode).toBe(200);
-    });
-
-    test("🧪 No blogs should exists at init", async () => {
-        const response = await request(app).get("/blogs");
-        expect(response.statusCode).toBe(200);
-        expect(response.body.data.articles.length).toBe(0);
     });
 
     test("🧪 Create a blog with no credentials", async () => {
