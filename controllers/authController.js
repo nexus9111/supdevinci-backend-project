@@ -37,8 +37,7 @@ const registerPerson = async (req) => {
         ]
     });
     if (userWithExistingEmail) {
-        // wait .3s to prevent brute force
-        await new Promise(resolve => setTimeout(resolve, 300));
+        await new Promise(resolve => setTimeout(resolve, 300)); // wait .3s to prevent brute force
         responseUtils.errorResponse(req, errors.errors.CONFLICT, "email or username already registered");
     }
 
@@ -52,9 +51,6 @@ const registerPerson = async (req) => {
     });
 
     user = await newUser.save();
-
-    logger.info(`User ${user.username} registered successfully`);
-
     return user;
 };
 
@@ -63,7 +59,8 @@ exports.register = async (req, res, next) => {
         switch (req.body.kind) {
             case "person":
                 let newPerson = await registerPerson(req);
-
+                logger.info(`User ${user.username} registered successfully`);
+                
                 return responseUtils.successResponse(res, 201, {
                     message: "User registered successfully",
                     user: userUtils.safeUser(newPerson),
