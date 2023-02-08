@@ -49,8 +49,8 @@ exports.getOne = async (req, res, next) => {
 exports.create = async (req, res, next) => {
     try {
         if (!req.body.title || !req.body.content) {
-            req.statusCode = 400;
-            throw new Error(errors.errors.BAD_BODY + " - missing title or content");
+            req.statusCode = errors.errors.BAD_BODY.code;
+            throw new Error(errors.errors.BAD_BODY.message + " - missing title or content");
         }
 
         articleUtils.checkArticleTitle(req, req.body.title)
@@ -154,8 +154,8 @@ exports.comment = async (req, res, next) => {
     try {
         let article = await articleUtils.getOneArticle(req, { id: req.params.id });
         if (!req.body.comment) {
-            req.statusCode = 400;
-            throw new Error(errors.errors.BAD_BODY + " - missing comment");
+            req.statusCode = errors.errors.BAD_BODY.code;
+            throw new Error(errors.errors.BAD_BODY.message + " - missing comment");
         }
 
         let comment = new Comment({
@@ -189,8 +189,8 @@ exports.deleteComment = async (req, res, next) => {
     try {
         let comment = await Comment.findOne({ id: req.params.id });
         if (!comment) {
-            req.statusCode = 404;
-            throw new Error(errors.errors.NOT_FOUND + " - comment not found");
+            req.statusCode = errors.errors.NOT_FOUND.code;
+            throw new Error(errors.errors.NOT_FOUND.message + " - comment not found");
         }
 
         userUtils.checkCanUpdateComment(comment, req.connectedUser);

@@ -26,28 +26,28 @@ exports.isPasswordValid = (password) => {
 const getConnectedUser = async (req) => {
     let token = req.headers.authorization;
     if (!token) {
-        req.statusCode = 401;
-        throw new Error(errors.errors.UNAUTHORIZED + " - missing token");
+        req.statusCode = errors.errors.UNAUTHORIZED.code;
+        throw new Error(errors.errors.UNAUTHORIZED.message + " - missing token");
     };
 
     // decode token
     let decoded = jwt.verify(token, JWT_SECRET);
     if (!decoded) {
-        req.statusCode = 401;
-        throw new Error(errors.errors.UNAUTHORIZED + " - invalid token");
+        req.statusCode = errors.errors.UNAUTHORIZED.code;
+        throw new Error(errors.errors.UNAUTHORIZED.message + " - invalid token");
     }
 
     let now = new Date();
     if (now > decoded.expires) {
-        req.statusCode = 401;
-        throw new Error(errors.errors.UNAUTHORIZED + " - token expired");
+        req.statusCode = errors.errors.UNAUTHORIZED.code;
+        throw new Error(errors.errors.UNAUTHORIZED.message + " - token expired");
     }
     
     let user = await User.findOne({ id: decoded.id }).select('-__v');
 
     if (!user) {
-        req.statusCode = 401;
-        throw new Error(errors.errors.UNAUTHORIZED + " - user with given token not found");
+        req.statusCode = errors.errors.UNAUTHORIZED.code;
+        throw new Error(errors.errors.UNAUTHORIZED.message + " - user with given token not found");
     }
 
     req.connectedUser = user;
@@ -58,8 +58,8 @@ exports.authorize = (roles = []) => async (req, res, next) => {
         await getConnectedUser(req);
 
         if (req.connectedUser.role === "banned") {
-            req.statusCode = 401;
-            throw new Error(errors.errors.UNAUTHORIZED);
+            req.statusCode = errors.errors.UNAUTHORIZED.code;
+            throw new Error(errors.errors.UNAUTHORIZED.message);
         }
         
         if (req.connectedUser.role === "superadmin") {
@@ -67,7 +67,7 @@ exports.authorize = (roles = []) => async (req, res, next) => {
         }
 
         if (roles.length >= 1 && !roles.includes(req.connectedUser.role)) {
-            throw new Error(errors.errors.UNAUTHORIZED);
+            throw new Error(errors.errors.errors.errors.UNAUTHORIZED);
         }
 
         next();

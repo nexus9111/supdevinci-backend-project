@@ -19,20 +19,20 @@ exports.register = async (req, res, next) => {
     try {
         //check body
         if (!req.body.email || !req.body.password || !req.body.username) {
-            req.statusCode = 400;
-            throw new Error(errors.errors.BAD_BODY + " - missing email, password or username");
+            req.statusCode = errors.errors.BAD_BODY.code;
+            throw new Error(errors.errors.BAD_BODY.message + " - missing email, password or username");
         }
 
         //check if email is valid
         if (!validator.validate(req.body.email)) {
-            req.statusCode = 400;
-            throw new Error(errors.errors.BAD_BODY + " - invalid email");
+            req.statusCode = errors.errors.BAD_BODY.code;
+            throw new Error(errors.errors.BAD_BODY.message + " - invalid email");
         }
 
         //check if password is valid
         if (!securityUtils.isPasswordValid(req.body.password)) {
-            req.statusCode = 400;
-            throw new Error(errors.errors.BAD_BODY + " - invalid password");
+            req.statusCode = errors.errors.BAD_BODY.code;
+            throw new Error(errors.errors.BAD_BODY.message + " - invalid password");
         }
 
         //check if email is already registered from email or username
@@ -43,8 +43,8 @@ exports.register = async (req, res, next) => {
             ]
         });
         if (user) {
-            req.statusCode = 400;
-            throw new Error(errors.errors.CONFLICT + " - email or username already registered");
+            req.statusCode = errors.errors.CONFLICT.code;
+            throw new Error(errors.errors.CONFLICT.message + " - email or username already registered");
         }
 
         //hash password
@@ -76,19 +76,19 @@ exports.login = async (req, res, next) => {
     try {
         if (!req.body.email || !req.body.password) {
             req.statusCode = 400;
-            throw new Error(errors.errors.BAD_BODY + " - missing email or password");
+            throw new Error(errors.errors.errors.errors.BAD_BODY + " - missing email or password");
         }
 
         let user = await User.findOne({ email: req.body.email });
         if (!user) {
             req.statusCode = 400;
-            throw new Error(errors.errors.BAD_CREDENTIALS);
+            throw new Error(errors.errors.errors.errors.BAD_CREDENTIALS);
         }
 
         let isPasswordCorrect = await bcrypt.compare(req.body.password, user.password);
         if (!isPasswordCorrect) {
             req.statusCode = 403;
-            throw new Error(errors.errors.BAD_CREDENTIALS);
+            throw new Error(errors.errors.errors.errors.BAD_CREDENTIALS);
         }
 
         //generate token
@@ -127,13 +127,13 @@ exports.deleteProfile = async (req, res, next) => {
         let user = await User.findOne({ id: req.params.id });
         if (!user) {
             req.statusCode = 404;
-            throw new Error(errors.errors.NOT_FOUND + " - user not found");
+            throw new Error(errors.errors.errors.errors.NOT_FOUND + " - user not found");
         }
 
         if (!userUtils.canModifyProfile(user, req.connectedUser)) {
             logger.warning(`User ${req.connectedUser.username} tried to delete ${user.username} profile`);
             req.statusCode = 403;
-            throw new Error(errors.errors.FORBIDDEN + " - you can't delete this profile");
+            throw new Error(errors.errors.errors.errors.FORBIDDEN + " - you can't delete this profile");
         }
 
         logger.info(`User ${req.connectedUser.username} deleted ${user.username} profile`);

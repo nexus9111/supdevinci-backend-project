@@ -78,7 +78,7 @@ describe("Testing the main API", () => {
 
     test("🧪 Create a user with same email", async () => {
         const response = await request(app).post("/users/register").send(user);
-        expect(response.statusCode).toBe(400);
+        expect(response.statusCode).toBe(409);
     });
 
     test("🧪 Login", async () => {

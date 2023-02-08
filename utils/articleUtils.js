@@ -13,8 +13,8 @@ exports.checkArticleTitle = (req, title) => {
     if (title.length >= 5 && title.length <= 100) {
         return true;
     }
-    req.statusCode = 400;
-    throw new Error(errors.errors.BAD_BODY + " - title must be between 5 and 100 characters");
+    req.statusCode = errors.errors.BAD_BODY.code;
+    throw new Error(errors.errors.BAD_BODY.message + " - title must be between 5 and 100 characters");
 }
 
 exports.getOneArticle = async (req, query = {}) => {
@@ -22,8 +22,8 @@ exports.getOneArticle = async (req, query = {}) => {
         .select('-__v');
 
     if (!article) {
-        req.statusCode = 404;
-        throw new Error(errors.errors.NOT_FOUND + " - article not found");
+        req.statusCode = errors.errors.NOT_FOUND.code;
+        throw new Error(errors.errors.NOT_FOUND.message + " - article not found");
     }
 
     return article;

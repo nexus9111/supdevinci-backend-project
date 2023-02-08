@@ -14,8 +14,8 @@ exports.checkCanUpdateArticle = (article, user) => {
         return true;
     }
     
-    req.statusCode = 403;
-    throw new Error(errors.errors.FORBIDDEN + " - not allowed to update this article");
+    req.statusCode = errors.errors.FORBIDDEN.code;
+    throw new Error(errors.errors.FORBIDDEN.message + " - not allowed to update this article");
 }
 
 exports.checkCanUpdateComment = (comment, user) => {
@@ -23,8 +23,8 @@ exports.checkCanUpdateComment = (comment, user) => {
         return true;
     }
     
-    req.statusCode = 403;
-    throw new Error(errors.errors.FORBIDDEN + " - not allowed to update this comment");
+    req.statusCode = errors.errors.FORBIDDEN.code;
+    throw new Error(errors.errors.FORBIDDEN.message + " - not allowed to update this comment");
 }
 
 const canUpdate = (content, user) => {
