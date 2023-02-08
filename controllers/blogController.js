@@ -35,10 +35,20 @@ exports.getOne = async (req, res, next) => {
     try {
         let article = await articleUtils.getOneArticle(req, { id: req.params.id });
 
+        // get all comments
+        let comments = await Comment.find({ article: article.id })
+            .select('-__v')
+            .select('-_id')
+            .sort({ date: -1 });
+
+        // add comments to article
+        article = articleUtils.safeArticle(article);
+        article.comments = comments;
+
         return res.status(200).json({
             success: true,
             data: {
-                article: articleUtils.safeArticle(article)
+                article: article
             }
         });
     } catch (error) {

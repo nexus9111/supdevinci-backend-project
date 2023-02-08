@@ -125,6 +125,12 @@ describe("Testing the main API", () => {
         articleId = response.body.data.article.id;
     });
 
+    test("🧪 Blog should have 0 comments", async () => {
+        const response = await request(app).get(`/blogs/${articleId}`);
+        expect(response.statusCode).toBe(200);
+        expect(response.body.data.article.comments.length).toBe(0);
+    });
+
     test("🧪 Create a blog with no title", async () => {
         const response = await request(app).post("/blogs").set("Authorization", userToken).send({
             content: article.content
@@ -166,6 +172,12 @@ describe("Testing the main API", () => {
         });
         commentId = response.body.data.comment.id;
         expect(response.statusCode).toBe(201);
+    });
+
+    test("🧪 Blog should have 1 comment", async () => {
+        const response = await request(app).get(`/blogs/${articleId}`);
+        expect(response.statusCode).toBe(200);
+        expect(response.body.data.article.comments.length).toBe(1);
     });
 
     test("🧪 Comment with no content", async () => {
