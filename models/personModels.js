@@ -6,10 +6,6 @@ const Profile = require("./profileModels");
 const roles = ["user", "admin", "superadmin", "banned"];
 
 const personSchema = new mongoose.Schema({
-    username: {
-        type: String,
-        required: true,
-    },
     email: {
         type: String,
         required: true,
@@ -25,6 +21,10 @@ const personSchema = new mongoose.Schema({
         type: String,
         default: roles[0],
         enum: roles
+    },
+    username: {
+        type: String,
+        required: true,
     },
 });
 

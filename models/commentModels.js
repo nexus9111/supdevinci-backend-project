@@ -2,9 +2,9 @@ const mongoose = require("mongoose");
 const { v4: uuidv4 } = require("uuid");
 
 const commentSchema = new mongoose.Schema({
-    id: {
+    article: {
         type: String,
-        unique: true
+        required: true,
     },
     author: {
         type: String,
@@ -14,17 +14,17 @@ const commentSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    comment: {
+        type: String,
+        required: true,
+    },
     date : {
         type: Date,
         default: Date.now
     },
-    article: {
+    id: {
         type: String,
-        required: true,
-    },
-    comment: {
-        type: String,
-        required: true,
+        unique: true
     },
 });
 

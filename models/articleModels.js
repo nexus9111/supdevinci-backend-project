@@ -2,15 +2,7 @@ const mongoose = require("mongoose");
 const { v4: uuidv4 } = require("uuid");
 
 const blogSchema = new mongoose.Schema({
-    id: {
-        type: String,
-        unique: true
-    },
     author: {
-        type: String,
-        required: true,
-    },
-    title: {
         type: String,
         required: true,
     },
@@ -18,9 +10,17 @@ const blogSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    id: {
+        type: String,
+        unique: true
+    },
     lastUpdated: {
         type: Date,
         default: Date.now
+    },
+    title: {
+        type: String,
+        required: true,
     },
 });
 

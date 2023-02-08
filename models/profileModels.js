@@ -4,10 +4,6 @@ const { v4: uuidv4 } = require("uuid");
 const roles = ["user", "admin", "superadmin", "banned"];
 
 const profileSchema = new mongoose.Schema({
-    id: {
-        type: String,
-        unique: true
-    },
     avatar: {
         type: String,
         default: "https://imgur.com/uyUFvIp"
@@ -19,6 +15,10 @@ const profileSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now
+    },
+    id: {
+        type: String,
+        unique: true
     },
 }, {
     discriminatorKey: "kind"
