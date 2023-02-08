@@ -10,16 +10,16 @@ const responseUtils = require("../utils/apiResponseUtils");
 
 exports.getAll = async (req, res, next) => {
     try {
-        let pageSize = parseInt(req.query.pageSize) || 10;
-        let page = parseInt(req.query.page) || 1;
+        let pageSize = Number.parseInt(req.query.pageSize) || 10;
+        let page = Number.parseInt(req.query.page) || 1;
         let skip = (page - 1) * pageSize;
 
         let author = req.query.author;
-        let dbQuery = {};
+        let databaseQuery = {};
         if (author) {
-            dbQuery = { author: author };
+            databaseQuery = { author: author };
         }
-        let articles = await articleUtils.getArticles(pageSize, skip, dbQuery);
+        let articles = await articleUtils.getArticles(pageSize, skip, databaseQuery);
 
         return responseUtils.successResponse(res, 200, {
             articles: articles
@@ -27,7 +27,7 @@ exports.getAll = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
-}
+};
 
 exports.getOne = async (req, res, next) => {
     try {
@@ -35,8 +35,8 @@ exports.getOne = async (req, res, next) => {
 
         // get all comments
         let comments = await Comment.find({ article: article.id })
-            .select('-__v')
-            .select('-_id')
+            .select("-__v")
+            .select("-_id")
             .sort({ date: -1 });
 
         // add comments to article
@@ -49,7 +49,7 @@ exports.getOne = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
-}
+};
 
 exports.create = async (req, res, next) => {
     try {
@@ -57,7 +57,7 @@ exports.create = async (req, res, next) => {
             responseUtils.errorResponse(req, errors.errors.BAD_BODY, "missing title or content");
         }
 
-        articleUtils.checkArticleTitle(req, req.body.title)
+        articleUtils.checkArticleTitle(req, req.body.title);
 
         let article = new Article({
             author: req.connectedUser.id,
@@ -67,7 +67,7 @@ exports.create = async (req, res, next) => {
 
         article = await article.save();
 
-        logger.info(`Article created successfully`, {
+        logger.info("Article created successfully", {
             title: article.title,
         });
 
@@ -78,7 +78,7 @@ exports.create = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
-}
+};
 
 exports.delete = async (req, res, next) => {
     try {
@@ -96,7 +96,7 @@ exports.delete = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
-}
+};
 
 exports.update = async (req, res, next) => {
     try {
@@ -105,7 +105,7 @@ exports.update = async (req, res, next) => {
         userUtils.checkCanUpdateArticle(req, article, req.connectedUser);
 
         if (req.body.title) {
-            articleUtils.checkArticleTitle(req, req.body.title)
+            articleUtils.checkArticleTitle(req, req.body.title);
             article.title = req.body.title;
         }
 
@@ -125,13 +125,13 @@ exports.update = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
-}
+};
 
 exports.getCommentsFromArticle = async (req, res, next) => {
     try {
         let comments = await Comment.find({ article: req.params.id })
-            .select('-__v')
-            .select('-_id')
+            .select("-__v")
+            .select("-_id")
             .sort({ date: -1 });
 
         return responseUtils.successResponse(res, 200, {
@@ -140,7 +140,7 @@ exports.getCommentsFromArticle = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
-}
+};
 
 exports.comment = async (req, res, next) => {
     try {
@@ -158,7 +158,7 @@ exports.comment = async (req, res, next) => {
 
         comment = await comment.save();
 
-        logger.info(`Comment created successfully`, {
+        logger.info("Comment created successfully", {
             id: comment.id,
             article: comment.article,
             author: comment.author
@@ -171,7 +171,7 @@ exports.comment = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
-}
+};
 
 exports.deleteComment = async (req, res, next) => {
     try {
@@ -190,4 +190,4 @@ exports.deleteComment = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
-}
+};

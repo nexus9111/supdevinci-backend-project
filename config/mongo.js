@@ -19,4 +19,4 @@ exports.connect = () => {
 exports.disconnect = () => {
     mongoose.disconnect();
     logger.info("✅ MongoDB Disconnected");
-}
+};

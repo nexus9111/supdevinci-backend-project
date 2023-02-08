@@ -104,7 +104,7 @@ exports.profile = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
-}
+};
 
 exports.deleteProfile = async (req, res, next) => {
     try {
@@ -131,4 +131,4 @@ exports.deleteProfile = async (req, res, next) => {
     } catch (error) {
         next(error);
     }
-}
+};

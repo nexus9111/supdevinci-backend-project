@@ -20,7 +20,7 @@ const blogSchema = new mongoose.Schema({
     },
     lastUpdated: {
         type: Date,
-        default: null
+        default: Date.now
     },
 });
 

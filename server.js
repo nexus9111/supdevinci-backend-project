@@ -15,7 +15,7 @@ app.listen(PORT, () => {
         "port": PORT,
         "blacklist ips": BLACKLIST,
         "url": `http://localhost:${PORT}`
-    })
+    });
 });
 
 

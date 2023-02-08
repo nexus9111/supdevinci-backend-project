@@ -14,16 +14,16 @@ const maliciousUser = {
     username: "Anonymous",
     password: "FucKS0c13tY@",
     email: "fsociety@protonmail.com"
-}
+};
 
 const article = {
     title: "Les boxers de bordeaux sont les meilleurs au hockey",
     content: "Oui ce blog est tout a fait vrai !",
-}
+};
 
 const comment = {
     content: "Samu Perhonen est le meilleur joueur de hockey au monde",
-}
+};
 
 /* -------------------------------------------------------------------------- */
 /*                         Testing failing resgisters                         */
@@ -70,13 +70,13 @@ describe("Testing failing resgisters", () => {
 
 describe("Testing the main API scenarios", () => {
 
-    let articleId = ""
-    let commentId = ""
-    let userId = ""
-    let userToken = ""
+    let articleId = "";
+    let commentId = "";
+    let userId = "";
+    let userToken = "";
 
-    let maliciousUserId = ""
-    let maliciousUserToken = ""
+    let maliciousUserId = "";
+    let maliciousUserToken = "";
 
     beforeAll(() => {
         mongo.connect();
@@ -84,7 +84,7 @@ describe("Testing the main API scenarios", () => {
 
     afterAll(() => {
         mongo.disconnect();
-    })
+    });
 
     test("🧪 Server should be alive", async () => {
         const response = await request(app).get("/");
@@ -169,7 +169,7 @@ describe("Testing the main API scenarios", () => {
     });
 
     test("🧪 Get user", async () => {
-        const response = await request(app).get(`/users/profile`).set("Authorization", userToken);
+        const response = await request(app).get("/users/profile").set("Authorization", userToken);
         expect(response.statusCode).toBe(200);
         expect(response.body.data.user.username).toBe(user.username);
         expect(response.body.data.user.email).toBe(user.email);
@@ -298,7 +298,7 @@ describe("Testing the main API scenarios", () => {
     });
     
     test("🧪 Edit not existing blog", async () => {
-        const response = await request(app).put(`/blogs/unexistedId`).set("Authorization", userToken).send({
+        const response = await request(app).put("/blogs/unexistedId").set("Authorization", userToken).send({
             title: article.title + " foo",
         });
         expect(response.statusCode).toBe(404);

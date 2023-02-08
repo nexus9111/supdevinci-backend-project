@@ -63,7 +63,7 @@ exports.authorize = (roles = []) => async (req, res, next) => {
             next();
         }
 
-        if (roles.length >= 1 && !roles.includes(req.connectedUser.role)) {
+        if (roles.length > 0 && !roles.includes(req.connectedUser.role)) {
             responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "user is not authorized");
         }
 

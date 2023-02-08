@@ -9,14 +9,14 @@ exports.safeArticle = (article) => {
     delete safeUser.__v;
     delete safeUser._id;
     return safeUser;
-}
+};
 
 exports.checkArticleTitle = (req, title) => {
     if (title.length >= 5 && title.length <= 100) {
         return true;
     }
     responseUtils.errorResponse(req, errors.errors.BAD_BODY, "title must be between 5 and 100 characters");
-}
+};
 
 exports.getOneArticle = async (req, query = {}) => {
     let article = await Article.findOne(query)
@@ -27,10 +27,11 @@ exports.getOneArticle = async (req, query = {}) => {
     }
 
     return article;
-}
+};
 
-exports.getArticles = async (pageSize, skip, query = {}) => {
-    let article = await Article.find(query)
+exports.getArticles = async (pageSize, skip, databaseQuery = {}) => {
+    // eslint-disable-next-line unicorn/no-array-callback-reference
+    let article = await Article.find(databaseQuery)
         .skip(skip)
         .limit(pageSize)
         .sort({ createdAt: -1 })
@@ -38,4 +39,4 @@ exports.getArticles = async (pageSize, skip, query = {}) => {
         .select("-_id");
 
     return article;
-}
+};

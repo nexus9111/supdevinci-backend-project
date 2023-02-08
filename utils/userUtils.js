@@ -9,7 +9,7 @@ exports.safeUser = (user) => {
     delete safeUser._id;
     delete safeUser.tokens;
     return safeUser;
-}
+};
 
 exports.checkCanUpdateArticle = (req, article, user) => {
     if (canUpdate(article, user)) {
@@ -17,7 +17,7 @@ exports.checkCanUpdateArticle = (req, article, user) => {
     }
     
     responseUtils.errorResponse(req, errors.errors.FORBIDDEN, "not allowed to update this article");
-}
+};
 
 exports.checkCanUpdateComment = (req, comment, user) => {
     if (canUpdate(comment, user)) {
@@ -25,15 +25,15 @@ exports.checkCanUpdateComment = (req, comment, user) => {
     }
     
     responseUtils.errorResponse(req, errors.errors.FORBIDDEN, "not allowed to update this comment");
-}
+};
 
 const canUpdate = (content, user) => {
     if (content.author === user.id || user.role === "admin" || user.role === "superadmin") {
         return true;
     }
     
-    return false
-}
+    return false;
+};
 
 exports.canModifyProfile = (user, connectedUser) => {
     // a superadmin can't be deleted
@@ -62,4 +62,4 @@ exports.canModifyProfile = (user, connectedUser) => {
     }
 
     return true;
-}
+};

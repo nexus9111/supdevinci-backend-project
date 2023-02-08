@@ -41,12 +41,12 @@ app.get("/easter-egg", (req, res) => {
 const routes = [
     { path: "/users", router: require("./router/authRouter") },
     { path: "/blogs", router: require("./router/blogRouter") }
-]
+];
 
-routes.forEach(route => {
+for (const route of routes) {
     app.use(route.path, route.router);
     logger.info("Route loaded", { "path": route.path });
-});
+}
 
 app.use((error, req, res, next) => {
     statusCode = req.statusCode || 500;
