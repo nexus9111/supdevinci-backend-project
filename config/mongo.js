@@ -10,6 +10,7 @@ exports.connect = () => {
         if (!error) {
             logger.info("✅ MongoDB Connection Succeeded. URL: " + MONGOOSE_URI);
         } else {
+            /* istanbul ignore next */
             logger.error("❌ MongoDB Connection Failed. URL: " + MONGOOSE_URI);
         }
     });

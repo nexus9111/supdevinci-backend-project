@@ -51,6 +51,7 @@ routes.forEach(route => {
 app.use((error, req, res, next) => {
     statusCode = req.statusCode || 500;
     if (statusCode === 500) {
+        /* istanbul ignore next */
         logger.error(error.toString());
     }
     res.status(statusCode).json({

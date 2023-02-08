@@ -25,6 +25,41 @@ const comment = {
     content: "Samu Perhonen est le meilleur joueur de hockey au monde",
 }
 
+describe("Testing failing resgisters", () => {
+    beforeAll(() => {
+        mongo.connect();
+    });
+
+    afterAll(() => {
+        mongo.disconnect();
+    });
+
+    test("🧪 Create a user with invalid body", async () => {
+        const response = await request(app).post("/users/register").send({
+            username: user.username,
+        });
+        expect(response.statusCode).toBe(400);
+    });
+
+    test("🧪 Create a user with invalid email", async () => {
+        const response = await request(app).post("/users/register").send({
+            username: user.username,
+            password: user.password,
+            email: "test"
+        });
+        expect(response.statusCode).toBe(400);
+    });
+
+    test("🧪 Create a user with invalid password", async () => {
+        const response = await request(app).post("/users/register").send({
+            username: user.username,
+            password: "test",
+            email: user.email
+        });
+        expect(response.statusCode).toBe(400);
+    });
+});
+
 describe("Testing the main API", () => {
 
     let articleId = ""
@@ -59,24 +94,6 @@ describe("Testing the main API", () => {
         expect(response.statusCode).toBe(401);
     });
 
-    test("🧪 Create a user with invalid email", async () => {
-        const response = await request(app).post("/users/register").send({
-            username: user.username,
-            password: user.password,
-            email: "test"
-        });
-        expect(response.statusCode).toBe(400);
-    });
-
-    test("🧪 Create a user with invalid password", async () => {
-        const response = await request(app).post("/users/register").send({
-            username: user.username,
-            password: "test",
-            email: user.email
-        });
-        expect(response.statusCode).toBe(400);
-    });
-
     test("🧪 Create a user", async () => {
         const response = await request(app).post("/users/register").send(user);
         expect(response.statusCode).toBe(201);
@@ -107,6 +124,13 @@ describe("Testing the main API", () => {
         expect(response.body.data.user.username).toBe(user.username);
         expect(response.body.data.user.email).toBe(user.email);
         userToken = response.body.data.token;
+    });
+
+    test("🧪 Login with invalid body", async () => {
+        const response = await request(app).post("/users/login").send({
+            email: user.email,
+        });
+        expect(response.statusCode).toBe(400);
     });
 
     test("🧪 Login with malicious user", async () => {
@@ -185,6 +209,12 @@ describe("Testing the main API", () => {
         const response = await request(app).get("/blogs");
         expect(response.statusCode).toBe(200);
         expect(response.body.data.articles.length).toBe(1);
+    });
+
+    test("🧪 Should have 0 blog written by malicious user", async () => {
+        const response = await request(app).get("/blogs?author=" + maliciousUserId).set("Authorization", userToken);
+        expect(response.statusCode).toBe(200);
+        expect(response.body.data.articles.length).toBe(0);
     });
 
     test("🧪 Get a blog", async () => {
@@ -306,6 +336,11 @@ describe("Testing the main API", () => {
         expect(response.statusCode).toBe(200);
     });
 
+    test("🧪 Delete unexisting comment", async () => {
+        const response = await request(app).delete(`/blogs/comments/${commentId}`).set("Authorization", maliciousUserToken);
+        expect(response.statusCode).toBe(404);
+    });
+
     test("🧪 Delete a blog", async () => {
         const response = await request(app).delete(`/blogs/${articleId}`).set("Authorization", userToken);
         expect(response.statusCode).toBe(200);
@@ -337,6 +372,7 @@ describe("Testing the main API", () => {
         expect(response.statusCode).toBe(403);
     });
 });
+
 
 describe("Testing API features", () => {
     test("🧪 Easter egg", async () => {
