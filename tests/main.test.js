@@ -25,6 +25,10 @@ const comment = {
     content: "Samu Perhonen est le meilleur joueur de hockey au monde",
 }
 
+/* -------------------------------------------------------------------------- */
+/*                         Testing failing resgisters                         */
+/* -------------------------------------------------------------------------- */
+
 describe("Testing failing resgisters", () => {
     beforeAll(() => {
         mongo.connect();
@@ -60,7 +64,11 @@ describe("Testing failing resgisters", () => {
     });
 });
 
-describe("Testing the main API", () => {
+/* -------------------------------------------------------------------------- */
+/*                       Testing the main API scenarios                       */
+/* -------------------------------------------------------------------------- */
+
+describe("Testing the main API scenarios", () => {
 
     let articleId = ""
     let commentId = ""
@@ -77,11 +85,6 @@ describe("Testing the main API", () => {
     afterAll(() => {
         mongo.disconnect();
     })
-
-    test("🧪 Server should be alive", async () => {
-        const response = await request(app).get("/");
-        expect(response.statusCode).toBe(200);
-    });
 
     test("🧪 No blogs should exists at init", async () => {
         const response = await request(app).get("/blogs");
@@ -373,8 +376,17 @@ describe("Testing the main API", () => {
     });
 });
 
+/* -------------------------------------------------------------------------- */
+/*                            Testing API features                            */
+/* -------------------------------------------------------------------------- */
 
 describe("Testing API features", () => {
+
+    test("🧪 Server should be alive", async () => {
+        const response = await request(app).get("/");
+        expect(response.statusCode).toBe(200);
+    });
+    
     test("🧪 Easter egg", async () => {
         const response = await request(app).get("/easter-egg");
         expect(response.statusCode).toBe(418);
