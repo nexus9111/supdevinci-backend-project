@@ -72,8 +72,7 @@ module.exports = {
 		"unicorn/prefer-array-flat-map": "error",
 		"unicorn/prefer-array-index-of": "error",
 		"unicorn/prefer-array-some": "error",
-		// TODO: Enable this by default when targeting a Node.js version that supports `Array#at`.
-		"unicorn/prefer-at": "off",
+		"unicorn/prefer-at": "error",
 		"unicorn/prefer-code-point": "error",
 		"unicorn/prefer-date-now": "error",
 		"unicorn/prefer-default-parameters": "error",
@@ -102,7 +101,6 @@ module.exports = {
 		"unicorn/prefer-regexp-test": "error",
 		"unicorn/prefer-set-has": "error",
 		"unicorn/prefer-spread": "error",
-		// TODO: Enable this by default when targeting Node.js 16.
 		"unicorn/prefer-string-replace-all": "off",
 		"unicorn/prefer-string-slice": "error",
 		"unicorn/prefer-string-starts-ends-with": "error",
@@ -125,8 +123,6 @@ module.exports = {
 		"unicorn/relative-url-style": "error",
 		"unicorn/require-array-join-separator": "error",
 		"unicorn/require-number-to-fixed-digits-argument": "error",
-		// Turned off because we can't distinguish `widow.postMessage` and `{Worker,MessagePort,Client,BroadcastChannel}#postMessage()`
-		// See #1396
 		"unicorn/require-post-message-target-origin": "off",
 		"unicorn/string-content": "off",
 		"unicorn/template-indent": "error",
