@@ -1,6 +1,6 @@
-const { BLACKLIST } = require('./config/vars');
+const { BLACKLIST } = require("./config/vars");
 const app = require("./config/express");
-const logger = require('./config/logger');
+const logger = require("./config/logger");
 
 const routerUtils = require("./utils/routerUtils");
 const responseUtils = require("./utils/apiResponseUtils");

@@ -3,8 +3,8 @@ const helmet = require("helmet");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const rateLimit = require("express-rate-limit");
-const fileUpload = require('express-fileupload');
-const expressip = require('express-ip');
+const fileUpload = require("express-fileupload");
+const expressip = require("express-ip");
 const app = express();
 
 const limiter = rateLimit(

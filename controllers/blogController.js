@@ -2,7 +2,7 @@ const Article = require("../models/articleModels");
 const Comment = require("../models/commentModels");
 
 const logger = require("../config/logger");
-const errors = require('../config/errors');
+const errors = require("../config/errors");
 
 const articleUtils = require("../utils/articleUtils");
 const userUtils = require("../utils/userUtils");

@@ -1,4 +1,4 @@
-const errors = require('../config/errors');
+const errors = require("../config/errors");
 
 const Article = require("../models/articleModels");
 
@@ -20,7 +20,7 @@ exports.checkArticleTitle = (req, title) => {
 
 exports.getOneArticle = async (req, query = {}) => {
     let article = await Article.findOne(query)
-        .select('-__v');
+        .select("-__v");
 
     if (!article) {
         responseUtils.errorResponse(req, errors.errors.NOT_FOUND, "article not found");
@@ -34,8 +34,8 @@ exports.getArticles = async (pageSize, skip, query = {}) => {
         .skip(skip)
         .limit(pageSize)
         .sort({ createdAt: -1 })
-        .select('-__v')
-        .select('-_id');
+        .select("-__v")
+        .select("-_id");
 
     return article;
 }

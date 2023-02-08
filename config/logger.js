@@ -1,14 +1,14 @@
-const winston = require('winston');
+const winston = require("winston");
 
-winston.level = 'debug';
+winston.level = "debug";
 const logger = winston.createLogger({
 
-    level: 'debug',
+    level: "debug",
     format: winston.format.combine(
         winston.format.timestamp(),
         winston.format.json()
     ),
-    defaultMeta: { service: 'supdevinci-backend-project' },
+    defaultMeta: { service: "supdevinci-backend-project" },
     transports: [
         new winston.transports.Console(),
     ], 

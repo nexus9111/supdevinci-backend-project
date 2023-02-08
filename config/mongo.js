@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
-const { MONGOOSE_URI } = require('./vars');
-const logger = require('./logger');
+const { MONGOOSE_URI } = require("./vars");
+const logger = require("./logger");
 
 mongoose.Promise = global.Promise;
 mongoose.set("strictQuery", false);

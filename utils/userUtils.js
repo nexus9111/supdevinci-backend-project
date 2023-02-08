@@ -1,4 +1,4 @@
-const errors = require('../config/errors');
+const errors = require("../config/errors");
 
 const responseUtils = require("../utils/apiResponseUtils");
 

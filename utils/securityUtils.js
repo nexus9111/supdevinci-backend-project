@@ -1,9 +1,9 @@
-const passwordValidator = require('password-validator');
+const passwordValidator = require("password-validator");
 const jwt = require("jsonwebtoken");
 
 const { JWT_SECRET } = require("../config/vars");
 const logger = require("../config/logger");
-const errors = require('../config/errors');
+const errors = require("../config/errors");
 
 const User = require("../models/userModels");
 
@@ -19,7 +19,7 @@ schema
     .has().lowercase()                              // Must have lowercase letters
     .has().digits()                                 // Must have digits
     .has().not().spaces()                           // Should not have spaces
-    .is().not().oneOf(['Passw0rd', 'Password123']); // Blacklist these values
+    .is().not().oneOf(["Passw0rd", "Password123"]); // Blacklist these values
 
 exports.isPasswordValid = (password) => {
     return schema.validate(password);
@@ -42,7 +42,7 @@ const getConnectedUser = async (req) => {
         responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "token expired");
     }
     
-    let user = await User.findOne({ id: decoded.id }).select('-__v');
+    let user = await User.findOne({ id: decoded.id }).select("-__v");
 
     if (!user) {
         responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "user with given token not found");

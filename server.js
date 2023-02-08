@@ -1,8 +1,8 @@
 const app = require("./app");
 const mongo = require("./config/mongo");
-const logger = require('./config/logger');
+const logger = require("./config/logger");
 
-const { PORT, ENV, BLACKLIST, USE_DATABASE } = require('./config/vars');
+const { PORT, ENV, BLACKLIST, USE_DATABASE } = require("./config/vars");
 
 if (USE_DATABASE) {
     mongo.connect();
