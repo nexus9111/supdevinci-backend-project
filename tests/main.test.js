@@ -337,3 +337,16 @@ describe("Testing the main API", () => {
         expect(response.statusCode).toBe(403);
     });
 });
+
+describe("Testing API features", () => {
+    test("🧪 Easter egg", async () => {
+        const response = await request(app).get("/easter-egg");
+        expect(response.statusCode).toBe(418);
+    });
+
+    let blacklistedIp = "178.20.55.18";
+    test("🧪 Call with blacklisted ip", async () => {
+        const response = await request(app).get("/").set("X-Forwarded-For", blacklistedIp);
+        expect(response.statusCode).toBe(403);
+    });
+});
