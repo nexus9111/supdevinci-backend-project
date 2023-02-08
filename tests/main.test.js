@@ -326,4 +326,14 @@ describe("Testing the main API", () => {
         expect(response.statusCode).toBe(200);
         expect(response.body.data.articles.length).toBe(0);
     });
+
+    test("🧪 Easter egg", async () => {
+        const response = await request(app).get("/easter-egg");
+        expect(response.statusCode).toBe(418);
+    });
+
+    test("🧪 Call with 178.20.55.18 should be blocked", async () => {
+        const response = await request(app).get("/").set("X-Forwarded-For", "178.20.55.18");
+        expect(response.statusCode).toBe(403);
+    });
 });
