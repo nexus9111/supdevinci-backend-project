@@ -86,6 +86,11 @@ describe("Testing the main API scenarios", () => {
         mongo.disconnect();
     })
 
+    test("🧪 Server should be alive", async () => {
+        const response = await request(app).get("/");
+        expect(response.statusCode).toBe(200);
+    });
+
     test("🧪 No blogs should exists at init", async () => {
         const response = await request(app).get("/blogs");
         expect(response.statusCode).toBe(200);
@@ -381,12 +386,6 @@ describe("Testing the main API scenarios", () => {
 /* -------------------------------------------------------------------------- */
 
 describe("Testing API features", () => {
-
-    test("🧪 Server should be alive", async () => {
-        const response = await request(app).get("/");
-        expect(response.statusCode).toBe(200);
-    });
-    
     test("🧪 Easter egg", async () => {
         const response = await request(app).get("/easter-egg");
         expect(response.statusCode).toBe(418);
