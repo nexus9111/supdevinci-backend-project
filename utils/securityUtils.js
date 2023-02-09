@@ -5,6 +5,8 @@ const { JWT_SECRET } = require("../config/vars");
 const logger = require("../config/logger");
 const errors = require("../config/errors");
 
+const Account = require("../models/accountModels");
+const Company = require("../models/companyModels");
 const Person = require("../models/personModels");
 
 const responseUtils = require("../utils/apiResponseUtils");
@@ -48,7 +50,7 @@ const getConnectedUser = async (req) => {
         responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "token expired");
     }
 
-    let user = await Person.findOne({ id: decoded.id }).select("-__v");
+    let user = await Account.findOne({ id: decoded.id }).select("-__v");
 
     if (!user) {
         responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "user with given token not found");
@@ -57,22 +59,66 @@ const getConnectedUser = async (req) => {
     req.connectedUser = user;
 };
 
-exports.authorize = (roles = []) => async (req, res, next) => {
+exports.authenticate = async (req, res, next) => {
     try {
         await getConnectedUser(req);
 
-        if (req.connectedUser.role === "banned") {
-            responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "user is banned");
+        next();
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.authenticateProfile = async (req, res, next) => {
+    try {
+        let profileId = "";
+        if (!req.body.profileId) {
+            if (!req.query.profileId) {
+                responseUtils.errorResponse(req, errors.errors.BAD_BODY, "missing profileId");
+            }
+            profileId = req.query.profileId;
+        } else {
+            profileId = req.body.profileId;
         }
 
-        if (req.connectedUser.role === "superadmin") {
-            next();
+        let person = await Person.findOne({ id: profileId })
+            .select("-__v -_id");
+
+        if (!person) {
+            let company = await Company.findOne({ id: profileId })
+                .select("-__v -_id");
+
+            if (!company) {
+                responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "unauthorized");
+            }
+
+            if (company.owner !== req.connectedUser.id) {
+                responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "unauthorized");
+            }
+
+            req.profile = company;
+            req.profileType = "Company";
+            return next();
         }
 
-        if (roles.length > 0 && !roles.includes(req.connectedUser.role)) {
-            responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "user is not authorized");
+        if (person.owner !== req.connectedUser.id) {
+            responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "unauthorized");
         }
 
+        req.profile = person;
+        req.profileType = "Person";
+        next();
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.checkBody = (req, res, next) => {
+    try {
+        if (!req.body.email || !req.body.password) {
+            responseUtils.errorResponse(req, errors.errors.BAD_BODY, "missing email, password");
+        }
+        req.body.email = req.body.email.toLowerCase().trim();
         next();
     } catch (error) {
         next(error);

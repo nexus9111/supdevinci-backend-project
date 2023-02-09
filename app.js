@@ -4,6 +4,7 @@ const logger = require("./config/logger");
 
 const routerUtils = require("./utils/routerUtils");
 const responseUtils = require("./utils/apiResponseUtils");
+const securityUtils = require("./utils/securityUtils");
 
 app.all("*", function (req, res, next) {
     try {
@@ -39,11 +40,15 @@ app.get("/easter-egg", (req, res) => {
 });
 
 const routes = [
-    { path: "/users", router: require("./router/authRouter") },
-    { path: "/blogs", router: require("./router/blogRouter") }
+    { path: "/auth", router: require("./router/authRouter"), authguard: false },
+    { path: "/blogs", router: require("./router/blogRouter"), authguard: false },
+    { path: "/profiles", router: require("./router/profileRouter"), authguard: true },
 ];
 
 for (const route of routes) {
+    if (route.authguard) {
+        app.use(route.path, securityUtils.authenticate , route.router);
+    }
     app.use(route.path, route.router);
     logger.info("Route loaded", { "path": route.path });
 }

@@ -15,3 +15,11 @@ exports.successResponse = (res, req, statusCode, data) => {
         data: data
     });
 };
+
+exports.safeDatabaseData = (dataBaseData) => {
+    const safeDataBaseData = dataBaseData.toObject();
+    delete safeDataBaseData.password;
+    delete safeDataBaseData.__v;
+    delete safeDataBaseData._id;
+    return safeDataBaseData;
+};

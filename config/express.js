@@ -7,16 +7,18 @@ const fileUpload = require("express-fileupload");
 const expressip = require("express-ip");
 const app = express();
 
+const { RATE_LIMITER } = require("./vars");
+
 const limiter = rateLimit(
     {
         windowMs: 15 * 60 * 1000, // 15 minutes
-        max: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
+        max: RATE_LIMITER, // Limit each IP to 100 requests per `window` (here, per 15 minutes)
         message:
-            {
-                status: 403,
-                success: false,
-                message: "Too many request from this IP, DDoS is bad 😈 ..."
-            },
+        {
+            status: 403,
+            success: false,
+            message: "Too many request from this IP, DDoS is bad 😈 ..."
+        },
     }
 );
 

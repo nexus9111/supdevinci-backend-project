@@ -5,11 +5,11 @@ const securityUtils = require("../utils/securityUtils");
 
 const controller = require("../controllers/authController");
 
-router.post("/login", controller.login);
-router.post("/register", controller.register);
+router.post("/login", securityUtils.checkBody, controller.login);
+router.post("/register", securityUtils.checkBody, controller.register);
 
 // you can use this to protect your route
-router.get("/profile", securityUtils.authorize([]), controller.profile);
-router.delete("/:id", securityUtils.authorize([]), controller.deleteProfile);
+router.get("/", securityUtils.authenticate, controller.profile);
+router.delete("/", securityUtils.authenticate, controller.deleteProfile);
 
 module.exports = router;

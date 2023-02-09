@@ -20,7 +20,7 @@ exports.checkArticleTitle = (req, title) => {
 
 exports.getOneArticle = async (req, query = {}) => {
     let article = await Article.findOne(query)
-        .select("-__v");
+        .select("-__v -_id");
 
     if (!article) {
         responseUtils.errorResponse(req, errors.errors.NOT_FOUND, "article not found");

@@ -3,26 +3,20 @@ const { v4: uuidv4 } = require("uuid");
 
 const Profile = require("./profileModels");
 
-const roles = ["user", "admin", "superadmin", "banned"];
-
 const personSchema = new mongoose.Schema({
-    email: {
+    avatar: {
+        type: String,
+        default: "https://imgur.com/uyUFvIp"
+    },
+    bio: {
+        type: String,
+        default: "This user has not written a bio yet."
+    },
+    firstName: {
         type: String,
         required: true,
-        trim: true,
-        lowercase: true,
-        unique: true,
     },
-    password: {
-        type: String,
-        required: true,
-    },
-    role: {
-        type: String,
-        default: roles[0],
-        enum: roles
-    },
-    username: {
+    lastName: {
         type: String,
         required: true,
     },

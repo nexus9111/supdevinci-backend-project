@@ -5,14 +5,16 @@ const securityUtils = require("../utils/securityUtils");
 
 const controller = require("../controllers/blogController");
 
-router.get("/comments/:id", controller.getCommentsFromArticle);
-router.post("/comments/:id", securityUtils.authorize([]), controller.comment);
-router.delete("/comments/:id", securityUtils.authorize([]), controller.deleteComment);
-
+// no need to be authenticated
+router.get("/:id/comments", controller.getCommentsFromArticle);
 router.get("/", controller.getAll);
 router.get("/:id", controller.getOne);
-router.post("/", securityUtils.authorize([]), controller.create);
-router.put("/:id", securityUtils.authorize([]), controller.update);
-router.delete("/:id", securityUtils.authorize([]), controller.delete);
+
+// need to be authenticated
+router.post("/:id/comments", [securityUtils.authenticate, securityUtils.authenticateProfile], controller.comment);
+router.delete("/comments/:id", [securityUtils.authenticate, securityUtils.authenticateProfile], controller.deleteComment);
+router.post("/", [securityUtils.authenticate, securityUtils.authenticateProfile], controller.create);
+router.put("/:id", [securityUtils.authenticate, securityUtils.authenticateProfile], controller.update);
+router.delete("/:id", [securityUtils.authenticate, securityUtils.authenticateProfile], controller.delete);
 
 module.exports = router;

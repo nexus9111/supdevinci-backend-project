@@ -10,7 +10,7 @@ const responseUtils = require("../utils/apiResponseUtils");
 
 exports.getAll = async (req, res, next) => {
     try {
-        let pageSize = Number.parseInt(req.query.pageSize) || 10;
+        let pageSize = Number.parseInt(req.query.limit) || 10;
         let page = Number.parseInt(req.query.page) || 1;
         let skip = (page - 1) * pageSize;
 
@@ -27,7 +27,7 @@ exports.getAll = async (req, res, next) => {
             articles: articles,
             maxPage: Math.ceil(articlesCount / pageSize),
             pageSize: pageSize,
-            page: page
+            currentPage: page
         });
     } catch (error) {
         next(error);
@@ -65,7 +65,7 @@ exports.create = async (req, res, next) => {
         articleUtils.checkArticleTitle(req, req.body.title);
 
         let article = new Article({
-            author: req.connectedUser.id,
+            author: req.profile.id,
             title: req.body.title,
             content: req.body.content
         });
@@ -89,7 +89,9 @@ exports.delete = async (req, res, next) => {
     try {
         let article = await articleUtils.getOneArticle(req, { id: req.params.id });
 
-        userUtils.checkCanUpdateArticle(req, article, req.connectedUser);
+        if (article.author !== req.profile.id) {
+            responseUtils.errorResponse(req, errors.errors.FORBIDDEN, "you can't delete this article");
+        }
 
         await Article.deleteOne({ id: req.params.id });
 
@@ -107,7 +109,9 @@ exports.update = async (req, res, next) => {
     try {
         let article = await articleUtils.getOneArticle(req, { id: req.params.id });
 
-        userUtils.checkCanUpdateArticle(req, article, req.connectedUser);
+        if (article.author !== req.profile.id) {
+            responseUtils.errorResponse(req, errors.errors.FORBIDDEN, "you can't update this article");
+        }
 
         if (req.body.title) {
             articleUtils.checkArticleTitle(req, req.body.title);
@@ -134,13 +138,28 @@ exports.update = async (req, res, next) => {
 
 exports.getCommentsFromArticle = async (req, res, next) => {
     try {
+        let pageSize = Number.parseInt(req.query.limit) || 10;
+        let page = Number.parseInt(req.query.page) || 1;
+        let skip = (page - 1) * pageSize;
+
+        let article = await articleUtils.getOneArticle(req, { id: req.params.id });
+        if (!article) {
+            responseUtils.errorResponse(req, errors.errors.NOT_FOUND, "article not found");
+        }
+
         let comments = await Comment.find({ article: req.params.id })
-            .select("-__v")
-            .select("-_id")
+            .skip(skip)
+            .limit(pageSize)
+            .select("-__v -_id")
             .sort({ date: -1 });
 
+        let commentsCount = await Comment.countDocuments({ article: req.params.id });
+
         return responseUtils.successResponse(res, req, 200, {
-            comments: comments
+            comments: comments,
+            maxPage: Math.ceil(commentsCount / pageSize),
+            pageSize: pageSize,
+            currentPage: page
         });
     } catch (error) {
         next(error);
@@ -155,9 +174,9 @@ exports.comment = async (req, res, next) => {
         }
 
         let comment = new Comment({
-            author: req.connectedUser.id,
+            author: req.profile.id,
             article: article.id,
-            authorName: req.connectedUser.username,
+            authorName: req.profileType === "Person" ? req.profile.firstName + " " + req.profile.lastName : req.profile.name,
             comment: req.body.comment
         });
 
@@ -185,7 +204,9 @@ exports.deleteComment = async (req, res, next) => {
             responseUtils.errorResponse(req, errors.errors.NOT_FOUND, "comment not found");
         }
 
-        userUtils.checkCanUpdateComment(req, comment, req.connectedUser);
+        if (comment.author !== req.profile.id) {
+            responseUtils.errorResponse(req, errors.errors.FORBIDDEN, "you are not allowed to delete this comment");
+        }
 
         await Comment.deleteOne({ id: req.params.id });
 
