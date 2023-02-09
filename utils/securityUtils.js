@@ -71,7 +71,7 @@ exports.authenticate = async (req, res, next) => {
 
 exports.authenticateProfile = async (req, res, next) => {
     try {
-        let profileId = "";
+        let profileId;
         if (!req.body.profileId) {
             if (!req.query.profileId) {
                 responseUtils.errorResponse(req, errors.errors.BAD_BODY, "missing profileId");
