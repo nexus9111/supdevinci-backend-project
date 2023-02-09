@@ -37,7 +37,6 @@ const getConnectedUser = async (req) => {
         responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "invalid token");
     }
 
-
     // decode token
     let decoded = jwt.verify(token, JWT_SECRET);
     if (!decoded) {
