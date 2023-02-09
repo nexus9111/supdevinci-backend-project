@@ -6,14 +6,13 @@ mongoose.Promise = global.Promise;
 mongoose.set("strictQuery", false);
 
 exports.connect = () => {
-    mongoose.connect(MONGOOSE_URI, {useNewUrlParser: true, useUnifiedTopology: true}, (error) => {
-        if (!error) {
+    mongoose.connect(MONGOOSE_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+        .then(() => {
             logger.info("✅ MongoDB Connection Succeeded. URL: " + MONGOOSE_URI);
-        } else {
-            /* istanbul ignore next */
+        })
+        .catch((error) => {
             logger.error("❌ MongoDB Connection Failed. URL: " + MONGOOSE_URI);
-        }
-    });
+        });
 };
 
 exports.disconnect = () => {
