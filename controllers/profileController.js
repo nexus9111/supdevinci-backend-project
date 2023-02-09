@@ -174,6 +174,12 @@ exports.getProfileArticles = async (req, res, next) => {
     }
 };
 
+const preProfileDelete = async (profilId) => {
+    // delete all comments and articles
+    await Comment.deleteMany({ author: profilId });
+    await Article.deleteMany({ author: profilId });
+};
+
 exports.deleteProfile = async (req, res, next) => {
     try {
         let person = await Person.findOne({ id: req.params.id });
@@ -182,15 +188,11 @@ exports.deleteProfile = async (req, res, next) => {
                 responseUtils.errorResponse(req, errors.errors.FORBIDDEN, "you are not the owner of this profile");
             }
 
-            // delete all comments and articles
-            await Comment.deleteMany({ author: person.id });
-            await Article.deleteMany({ author: person.id });
-
+            await preProfileDelete(person.id);
             await Person.deleteOne({ id: req.params.id });
             
             return responseUtils.successResponse(res, req, 200, {
-                message: "Person found",
-                person: responseUtils.safeDatabaseData(person),
+                message: "Profile deleted",
             });
         }
 
@@ -200,15 +202,11 @@ exports.deleteProfile = async (req, res, next) => {
                 responseUtils.errorResponse(req, errors.errors.FORBIDDEN, "you are not the owner of this profile");
             }
 
-            // delete all comments and articles
-            await Comment.deleteMany({ author: company.id });
-            await Article.deleteMany({ author: company.id });
-
+            await preProfileDelete(company.id);
             await Company.deleteOne({ id: req.params.id });
 
             return responseUtils.successResponse(res, req, 200, {
-                message: "Company found",
-                company: responseUtils.safeDatabaseData(company),
+                message: "Profile deleted",
             });
         }
 
