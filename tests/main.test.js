@@ -585,7 +585,7 @@ describe("Testing Profile controller", () => {
     afterAll(() => {
         mongo.disconnect();
     });
-    test("🧪 Create a profile", async () => {
+    test("🧪 Account creation", async () => {
         // create account
         const responseCreateAccount = await request(app).post(ACCOUNT_REGISTER_ENDPOINT).send(account);
         expect(responseCreateAccount.statusCode).toBe(201);
@@ -636,21 +636,21 @@ describe("Testing Profile controller", () => {
         expect(responseCreateUnknownKindProfile.statusCode).toBe(400);
     });
 
-    test("🧪 Create person without lastName should fail", async () => {
+    test("🧪 Person profile creation without lastName - should fail", async () => {
         const response = await request(app).post(PROFILE_ENDPOINT)
             .set("Authorization", accountToken)
             .send({ firstName: "John", kind: "Person" });
         expect(response.statusCode).toBe(400);
     });
 
-    test("🧪 Create company without name should fail", async () => {
+    test("🧪 Company profile creation without name - should fail", async () => {
         const response = await request(app).post(PROFILE_ENDPOINT)
             .set("Authorization", accountToken)
             .send({ kind: "Company" });
         expect(response.statusCode).toBe(400);
     });
 
-    test("🧪 Get person profile", async () => {
+    test("🧪 Person profile getter", async () => {
         const response = await request(app).get(`${PROFILE_ENDPOINT}/${accountPersonId}`)
             .set("Authorization", accountToken);
         expect(response.statusCode).toBe(200);
@@ -659,7 +659,7 @@ describe("Testing Profile controller", () => {
         expect(response.body.data.person.kind).toBe("Person");
     });
 
-    test("🧪 Get company profile", async () => {
+    test("🧪 Company profile getter", async () => {
         const response = await request(app).get(`${PROFILE_ENDPOINT}/${accountCompanyId}`)
             .set("Authorization", accountToken);
         expect(response.statusCode).toBe(200);
@@ -667,13 +667,13 @@ describe("Testing Profile controller", () => {
         expect(response.body.data.company.kind).toBe("Company");
     });
 
-    test("🧪 Get unknown profile should fail", async () => {
+    test("🧪 Unknown profile getter - should fail", async () => {
         const response = await request(app).get(`${PROFILE_ENDPOINT}/123456789`)
             .set("Authorization", accountToken);
         expect(response.statusCode).toBe(404);
     });
 
-    test("🧪 Get account profiles", async () => {
+    test("🧪 Account getter", async () => {
         const response = await request(app).get(PROFILE_ENDPOINT)
             .set("Authorization", accountToken);
         expect(response.statusCode).toBe(200);
@@ -683,59 +683,59 @@ describe("Testing Profile controller", () => {
     });
 
 
-    test("🧪 Get person comments", async () => {
+    test("🧪 Person profile comment getter", async () => {
         const response = await request(app).get(`${PROFILE_ENDPOINT}/${accountPersonId}/comments`)
             .set("Authorization", accountToken);
         expect(response.statusCode).toBe(200);
         expect(response.body.data.comments.length).toBe(0);
     });
 
-    test("🧪 Get company comments", async () => {
+    test("🧪 Company profile comment getter", async () => {
         const response = await request(app).get(`${PROFILE_ENDPOINT}/${accountCompanyId}/comments`)
             .set("Authorization", accountToken);
         expect(response.statusCode).toBe(200);
         expect(response.body.data.comments.length).toBe(0);
     });
 
-    test("🧪 Get person articles", async () => {
+    test("🧪 Person profile articles getter", async () => {
         const response = await request(app).get(`${PROFILE_ENDPOINT}/${accountPersonId}/articles`)
             .set("Authorization", accountToken);
         expect(response.statusCode).toBe(200);
         expect(response.body.data.articles.length).toBe(0);
     });
 
-    test("🧪 Get company articles", async () => {
+    test("🧪 Company profile articles getter", async () => {
         const response = await request(app).get(`${PROFILE_ENDPOINT}/${accountCompanyId}/articles`)
             .set("Authorization", accountToken);
         expect(response.statusCode).toBe(200);
         expect(response.body.data.articles.length).toBe(0);
     });
 
-    test("🧪 Delete person profile", async () => {
+    test("🧪 Person profile deletion", async () => {
         const response = await request(app).delete(`${PROFILE_ENDPOINT}/${accountPersonId}`)
             .set("Authorization", accountToken);
         expect(response.statusCode).toBe(200);
     });
 
-    test("🧪 Delete company profile", async () => {
+    test("🧪 Company profile deletion", async () => {
         const response = await request(app).delete(`${PROFILE_ENDPOINT}/${accountCompanyId}`)
             .set("Authorization", accountToken);
         expect(response.statusCode).toBe(200);
     });
 
-    test("🧪 Delete unknown profile should fail", async () => {
+    test("🧪 Unknown profile deletion - should fail", async () => {
         const response = await request(app).delete(`${PROFILE_ENDPOINT}/123456789`)
             .set("Authorization", accountToken);
         expect(response.statusCode).toBe(404);
     });
 
-    test("🧪 There should be 0 blogs", async () => {
+    test("🧪 No article should left after deletion", async () => {
         const response = await request(app).get(`${BLOG_ENDPOINT}`);
         expect(response.statusCode).toBe(200);
         expect(response.body.data.articles.length).toBe(0);
     });
 
-    test("🧪 Delete account", async () => {
+    test("🧪 Account deletion", async () => {
         const response = await request(app).delete(`${ACCOUNT_ENDPOINT}`)
             .set("Authorization", accountToken);
         expect(response.statusCode).toBe(200);
