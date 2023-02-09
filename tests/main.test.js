@@ -59,8 +59,7 @@ const comment = {
 /* -------------------------------------------------------------------------- */
 /*                         Testing failing resgisters                         */
 /* -------------------------------------------------------------------------- */
-
-describe("Testing failing account resgisters", () => {
+describe("Testing API without using database", () => {
     beforeAll(async () => {
         await mongo.connect();
     });
@@ -69,7 +68,7 @@ describe("Testing failing account resgisters", () => {
         mongo.disconnect();
     });
 
-    test("🧪 Create a user with invalid body", async () => {
+    test("🧪 Account creation with invalid body - should fail ", async () => {
         const response = await request(app).post(ACCOUNT_REGISTER_ENDPOINT).send({
             username: "foo",
             kind: "bar"
@@ -77,7 +76,7 @@ describe("Testing failing account resgisters", () => {
         expect(response.statusCode).toBe(400);
     });
 
-    test("🧪 Create a user with invalid email", async () => {
+    test("🧪 Account creation with invalid email - should fail", async () => {
         const response = await request(app).post(ACCOUNT_REGISTER_ENDPOINT).send({
             password: account.password,
             email: "test",
@@ -85,30 +84,41 @@ describe("Testing failing account resgisters", () => {
         expect(response.statusCode).toBe(400);
     });
 
-    test("🧪 Create a user with invalid password", async () => {
+    test("🧪 Account creation with invalid password  - should fail", async () => {
         const response = await request(app).post(ACCOUNT_REGISTER_ENDPOINT).send({
             password: "test",
             email: account.email,
         });
         expect(response.statusCode).toBe(400);
     });
+
+    test("🧪 Article creation without credentials - should fail", async () => {
+        const response = await request(app).post(BLOG_ENDPOINT);
+        expect(response.statusCode).toBe(401);
+    });
+
+    test("🧪 Login with invalid body - should fail", async () => {
+        const response = await request(app).post(ACCOUNT_LOGIN_ENDPOINT).send({
+            email: account.email,
+        });
+        expect(response.statusCode).toBe(400);
+    });
+
+    test("🧪 Person profile creation without credentials - should fail", async () => {
+        const response = await request(app).post(PROFILE_ENDPOINT)
+            .send(accountPerson);
+        expect(response.statusCode).toBe(401);
+    });
 });
 
 /* -------------------------------------------------------------------------- */
 /*                       Testing the main API scenarios                       */
 /* -------------------------------------------------------------------------- */
-
 describe("Testing the main API scenarios", () => {
-    let accountId = "";
-    let accountToken = "";
-    let articleId = "";
-    let commentId = "";
-    let companyId = "";
-    let maliciousAccountId = "";
-    let maliciousAccountToken = "";
-    let maliciousProfileId = "";
-    let accountPersonId = "";
-    let accountCompanyId = "";
+    let accountToken;
+    let articleId;
+    let commentId;
+    let accountPersonId;
 
     beforeAll(async () => {
         await mongo.connect();
@@ -118,14 +128,122 @@ describe("Testing the main API scenarios", () => {
         mongo.disconnect();
     });
 
-    test("🧪 Server should be alive", async () => {
-        const response = await request(app).get("/");
+    test("🧪 Account creation", async () => {
+        const response = await request(app).post(ACCOUNT_REGISTER_ENDPOINT).send(account);
+        expect(response.statusCode).toBe(201);
+        expect(response.body.data.account.email).toBe(account.email);
+        accountId = response.body.data.account.id;
+    });
+
+    test("🧪 Account login", async () => {
+        const response = await request(app).post(ACCOUNT_LOGIN_ENDPOINT).send({
+            email: account.email,
+            password: account.password
+        });
+        expect(response.statusCode).toBe(200);
+        expect(response.body.data.account.email).toBe(account.email);
+        accountToken = response.body.data.token;
+    });
+
+    test("🧪 Person profile creation", async () => {
+        const response = await request(app).post(PROFILE_ENDPOINT)
+            .set("Authorization", accountToken)
+            .send(accountPerson);
+        expect(response.statusCode).toBe(201);
+        expect(response.body.data.person.firstName).toBe(accountPerson.expectedFirstName);
+        expect(response.body.data.person.lastName).toBe(accountPerson.expectedLastName);
+        expect(response.body.data.person.kind).toBe("Person");
+        accountPersonId = response.body.data.person.id;
+    });
+
+    test("🧪 Article creation on person profile", async () => {
+        const articleWithProfileId = Object.assign({}, article, { profileId: accountPersonId });
+        const response = await request(app).post(BLOG_ENDPOINT)
+            .set("Authorization", accountToken)
+            .send(articleWithProfileId);
+        expect(response.statusCode).toBe(201);
+        expect(response.body.data.article.title).toBe(article.title);
+        expect(response.body.data.article.content).toBe(article.content);
+        expect(response.body.data.article.author).toBe(accountPersonId);
+        articleId = response.body.data.article.id;
+    });
+
+    test("🧪 Article title edition on person profile", async () => {
+        const response = await request(app).put(`${BLOG_ENDPOINT}/${articleId}`)
+            .set("Authorization", accountToken)
+            .send({ title: "New title", profileId: accountPersonId });
+        expect(response.statusCode).toBe(200);
+        expect(response.body.data.article.title).toBe("New title");
+        expect(response.body.data.article.content).toBe(article.content);
+        expect(response.body.data.article.author).toBe(accountPersonId);
+    });
+
+    test("🧪 Article content edition on person profile", async () => {
+        const response = await request(app).put(`${BLOG_ENDPOINT}/${articleId}`)
+            .set("Authorization", accountToken)
+            .send({ content: "New content", profileId: accountPersonId });
+        expect(response.statusCode).toBe(200);
+        expect(response.body.data.article.title).toBe("New title");
+        expect(response.body.data.article.content).toBe("New content");
+        expect(response.body.data.article.author).toBe(accountPersonId);
+    });
+
+    test("🧪 Comment creation on person profile article", async () => {
+        const commentWithProfileId = Object.assign({}, comment, { profileId: accountPersonId });
+        const response = await request(app).post(`${BLOG_ENDPOINT}/${articleId}/comments`)
+            .set("Authorization", accountToken)
+            .send(commentWithProfileId);
+        expect(response.statusCode).toBe(201);
+        expect(response.body.data.comment.content).toBe(comment.content);
+        expect(response.body.data.comment.author).toBe(accountPersonId);
+        commentId = response.body.data.comment.id;
+    });
+
+    test("🧪 Comment deletion on person profile article", async () => {
+        const response = await request(app).delete(`${BLOG_ENDPOINT}/comments/${commentId}?profileId=${accountPersonId}`)
+            .set("Authorization", accountToken);
         expect(response.statusCode).toBe(200);
     });
 
-    test("🧪 Create a blog with no credentials", async () => {
-        const response = await request(app).post(BLOG_ENDPOINT);
-        expect(response.statusCode).toBe(401);
+    test("🧪 Article deletion on person profile", async () => {
+        const response = await request(app).delete(`${BLOG_ENDPOINT}/${articleId}?profileId=${accountPersonId}`)
+            .set("Authorization", accountToken);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test("🧪 Account deletion", async () => {
+        const response = await request(app).delete(`${ACCOUNT_ENDPOINT}`)
+            .set("Authorization", accountToken);
+        expect(response.statusCode).toBe(200);
+    });
+
+    test("🧪 No article should left after deletion", async () => {
+        const response = await request(app).get(`${BLOG_ENDPOINT}`);
+        expect(response.statusCode).toBe(200);
+        expect(response.body.data.articles.length).toBe(0);
+    });
+});
+
+/* -------------------------------------------------------------------------- */
+/*             Testing the main API scenarios with malicious user             */
+/* -------------------------------------------------------------------------- */
+describe("Testing the main API scenarios with malicious user", () => {
+    let accountId;
+    let accountToken;
+    let articleId;
+    let commentId;
+    let companyId;
+    let maliciousAccountToken;
+    let maliciousProfileId;
+    let accountPersonId;
+    let accountCompanyId;
+
+    beforeAll(async () => {
+        await mongo.connect();
+    });
+
+    afterAll(() => {
+        mongo.disconnect();
     });
 
     test("🧪 Create an account", async () => {
@@ -165,13 +283,6 @@ describe("Testing the main API scenarios", () => {
         expect(response.statusCode).toBe(200);
         expect(response.body.data.account.email).toBe(maliciousAccount.email);
         maliciousAccountToken = response.body.data.token;
-    });
-
-    test("🧪 Login with invalid body", async () => {
-        const response = await request(app).post(ACCOUNT_LOGIN_ENDPOINT).send({
-            email: account.email,
-        });
-        expect(response.statusCode).toBe(400);
     });
 
     test("🧪 Login with wrong email", async () => {
@@ -232,12 +343,6 @@ describe("Testing the main API scenarios", () => {
         companyId = response.body.data.company.id;
     });
 
-    test("🧪 Create account person with no credentials", async () => {
-        const response = await request(app).post(PROFILE_ENDPOINT)
-            .send(accountPerson);
-        expect(response.statusCode).toBe(401);
-    });
-
     test("🧪 Account should have 1 person and 1 company", async () => {
         const response = await request(app).get(ACCOUNT_ENDPOINT)
             .set("Authorization", accountToken);
@@ -287,7 +392,7 @@ describe("Testing the main API scenarios", () => {
         expect(response.body.data.article.title).toBe("New title");
         expect(response.body.data.article.content).toBe("New content");
         expect(response.body.data.article.author).toBe(accountPersonId);
-    }); 
+    });
 
     test("🧪 Create a blog from person company", async () => {
         // merge article and profileId
@@ -445,19 +550,15 @@ describe("Testing the main API scenarios", () => {
         expect(response.statusCode).toBe(200);
     });
 
-    /* -------------------------------------------------------------------------- */
-    /*                             RESET MAIN SCENARIO                            */
-    /* -------------------------------------------------------------------------- */
-
     test("🧪 Delete malicious account", async () => {
         const response = await request(app).delete(`${ACCOUNT_ENDPOINT}`)
-            .set("Authorization", accountToken);
+            .set("Authorization", maliciousAccountToken);
         expect(response.statusCode).toBe(200);
     });
 
     test("🧪 Delete account", async () => {
         const response = await request(app).delete(`${ACCOUNT_ENDPOINT}`)
-            .set("Authorization", maliciousAccountToken);
+            .set("Authorization", accountToken);
         expect(response.statusCode).toBe(200);
     });
 
@@ -466,11 +567,24 @@ describe("Testing the main API scenarios", () => {
         expect(response.statusCode).toBe(200);
         expect(response.body.data.articles.length).toBe(0);
     });
+});
 
-    /* -------------------------------------------------------------------------- */
-    /*                         TESTING PROFILE CONTROLLER                         */
-    /* -------------------------------------------------------------------------- */
+/* -------------------------------------------------------------------------- */
+/*                         TESTING PROFILE CONTROLLER                         */
+/* -------------------------------------------------------------------------- */
+describe("Testing Profile controller", () => {
+    let accountId;
+    let accountToken;
+    let accountPersonId;
+    let accountCompanyId;
 
+    beforeAll(async () => {
+        await mongo.connect();
+    });
+
+    afterAll(() => {
+        mongo.disconnect();
+    });
     test("🧪 Create a profile", async () => {
         // create account
         const responseCreateAccount = await request(app).post(ACCOUNT_REGISTER_ENDPOINT).send(account);
@@ -552,7 +666,7 @@ describe("Testing the main API scenarios", () => {
         expect(response.body.data.company.name).toBe(accountCompany.expectedName);
         expect(response.body.data.company.kind).toBe("Company");
     });
-    
+
     test("🧪 Get unknown profile should fail", async () => {
         const response = await request(app).get(`${PROFILE_ENDPOINT}/123456789`)
             .set("Authorization", accountToken);
@@ -626,8 +740,6 @@ describe("Testing the main API scenarios", () => {
             .set("Authorization", accountToken);
         expect(response.statusCode).toBe(200);
     });
-
-    return;
 });
 
 /* -------------------------------------------------------------------------- */
@@ -635,6 +747,12 @@ describe("Testing the main API scenarios", () => {
 /* -------------------------------------------------------------------------- */
 
 describe("Testing API features", () => {
+
+    test("🧪 Server should be alive", async () => {
+        const response = await request(app).get("/");
+        expect(response.statusCode).toBe(200);
+    });
+
     test("🧪 Easter egg", async () => {
         const response = await request(app).get(EASTER_EGG);
         expect(response.statusCode).toBe(418);
