@@ -10,7 +10,6 @@ const Article = require("../models/articleModels");
 const Comment = require("../models/commentModels");
 const Person = require("../models/personModels");
 const Company = require("../models/companyModels");
-const Account = require("../models/accountModels");
 
 const securityUtils = require("../utils/securityUtils");
 const userUtils = require("../utils/userUtils");
@@ -183,8 +182,12 @@ exports.deleteProfile = async (req, res, next) => {
                 responseUtils.errorResponse(req, errors.errors.FORBIDDEN, "you are not the owner of this profile");
             }
 
-            await Person.deleteOne({ id: req.params.id });
+            // delete all comments and articles
+            await Comment.deleteMany({ author: person.id });
+            await Article.deleteMany({ author: person.id });
 
+            await Person.deleteOne({ id: req.params.id });
+            
             return responseUtils.successResponse(res, req, 200, {
                 message: "Person found",
                 person: responseUtils.safeDatabaseData(person),
@@ -196,6 +199,10 @@ exports.deleteProfile = async (req, res, next) => {
             if (company.owner !== req.connectedUser.id) {
                 responseUtils.errorResponse(req, errors.errors.FORBIDDEN, "you are not the owner of this profile");
             }
+
+            // delete all comments and articles
+            await Comment.deleteMany({ author: company.id });
+            await Article.deleteMany({ author: company.id });
 
             await Company.deleteOne({ id: req.params.id });
 
