@@ -32,8 +32,8 @@ const comment = {
 /* -------------------------------------------------------------------------- */
 
 describe("Testing failing resgisters", () => {
-    beforeAll(async () => {
-        await mongo.connect();
+    beforeAll(() => {
+        mongo.connect();
     });
 
     afterAll(() => {

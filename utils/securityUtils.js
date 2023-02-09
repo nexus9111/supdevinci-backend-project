@@ -31,10 +31,12 @@ const getConnectedUser = async (req) => {
         responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "missing token");
     };
 
-    token = token.replace("Bearer ", "");
-    if (token.length === 0) {
-        responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "missing token");
+    try {
+        token = token.split(" ")[1];
+    } catch {
+        responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "invalid token");
     }
+
 
     // decode token
     let decoded = jwt.verify(token, JWT_SECRET);
@@ -46,7 +48,7 @@ const getConnectedUser = async (req) => {
     if (now > decoded.expires) {
         responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "token expired");
     }
-    
+
     let user = await Person.findOne({ id: decoded.id }).select("-__v");
 
     if (!user) {
@@ -63,7 +65,7 @@ exports.authorize = (roles = []) => async (req, res, next) => {
         if (req.connectedUser.role === "banned") {
             responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "user is banned");
         }
-        
+
         if (req.connectedUser.role === "superadmin") {
             next();
         }
