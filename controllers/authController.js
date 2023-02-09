@@ -60,8 +60,8 @@ exports.register = async (req, res, next) => {
             case "person":
                 let newPerson = await registerPerson(req);
                 logger.info(`User ${user.username} registered successfully`);
-                
-                return responseUtils.successResponse(res, 201, {
+
+                return responseUtils.successResponse(res, req, 201, {
                     message: "User registered successfully",
                     user: userUtils.safeUser(newPerson),
                 });
@@ -96,7 +96,7 @@ exports.login = async (req, res, next) => {
         //generate token
         let token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: "1d" });
 
-        return responseUtils.successResponse(res, 200, {
+        return responseUtils.successResponse(res, req, 200, {
             message: "Login successful",
             token: token,
             user: userUtils.safeUser(user),
@@ -108,7 +108,7 @@ exports.login = async (req, res, next) => {
 
 exports.profile = async (req, res, next) => {
     try {
-        return responseUtils.successResponse(res, 200, {
+        return responseUtils.successResponse(res, req, 200, {
             message: "Profile fetched successfully",
             user: userUtils.safeUser(req.connectedUser),
         });
@@ -136,7 +136,7 @@ exports.deleteProfile = async (req, res, next) => {
         await Article.deleteMany({ author: user.id });
         await Comment.deleteMany({ author: user.id });
 
-        return responseUtils.successResponse(res, 200, {
+        return responseUtils.successResponse(res, req, 200, {
             message: "Profile deleted",
         });
     } catch (error) {

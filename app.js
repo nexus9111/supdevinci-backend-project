@@ -23,7 +23,7 @@ app.all("*", function (req, res, next) {
 });
 
 app.get("/", (req, res) => {
-    responseUtils.successResponse(res, 200, {
+    responseUtils.successResponse(res, req, 200, {
         message: "Welcome to the API",
         origin: "https://github.com/nexus9111/nodejs_boilerplate_rest_api.git"
     });
@@ -31,7 +31,7 @@ app.get("/", (req, res) => {
 
 // easter egg
 app.get("/easter-egg", (req, res) => {
-    responseUtils.successResponse(res, 418, {
+    responseUtils.successResponse(res, req, 418, {
         message: "Congratulations! You've stumbled upon a secret path in the API. Take a break from your usual requests and enjoy this little Easter egg. May your code be filled with joy and your bugs be minimal.",
         website: "https://www.joss-coupet.eu/",
         statusCodeOrigin: "https://developer.mozilla.org/en-US/docs/Web/HTTP/Status/418"
@@ -54,6 +54,7 @@ app.use((error, req, res, next) => {
         /* istanbul ignore next */
         logger.error(error.toString());
     }
+    res.header("Location", routerUtils.getFullUrl(res));
     res.status(statusCode).json({
         "success": false,
         "data": {
