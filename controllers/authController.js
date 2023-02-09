@@ -98,7 +98,7 @@ exports.login = async (req, res, next) => {
 
         return responseUtils.successResponse(res, req, 200, {
             message: "Login successful",
-            token: token,
+            token: "Bearer " + token,
             user: userUtils.safeUser(user),
         });
     } catch (error) {
