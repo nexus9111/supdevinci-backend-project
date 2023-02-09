@@ -32,8 +32,8 @@ const comment = {
 /* -------------------------------------------------------------------------- */
 
 describe("Testing failing resgisters", () => {
-    beforeAll(() => {
-        mongo.connect();
+    beforeAll(async() => {
+        await mongo.connect();
     });
 
     afterAll(() => {
@@ -184,7 +184,7 @@ describe("Testing the main API scenarios", () => {
     });
 
     test("🧪 Get user", async () => {
-        const response = await request(app).get("/users/profile").set("Authorization", userToken);
+        const response = await request(app).get("/users/profile").set("Authorization", "Bearer "+userToken);
         expect(response.statusCode).toBe(200);
         expect(response.body.data.user.username).toBe(user.username);
         expect(response.body.data.user.email).toBe(user.email);
@@ -192,7 +192,7 @@ describe("Testing the main API scenarios", () => {
     });
 
     test("🧪 Create a blog", async () => {
-        const response = await request(app).post("/blogs").set("Authorization", userToken).send({
+        const response = await request(app).post("/blogs").set("Authorization", "Bearer "+userToken).send({
             title: article.title,
             content: article.content
         });
@@ -207,21 +207,21 @@ describe("Testing the main API scenarios", () => {
     });
 
     test("🧪 Create a blog with no title", async () => {
-        const response = await request(app).post("/blogs").set("Authorization", userToken).send({
+        const response = await request(app).post("/blogs").set("Authorization", "Bearer "+userToken).send({
             content: article.content
         });
         expect(response.statusCode).toBe(400);
     });
 
     test("🧪 Create a blog with no content", async () => {
-        const response = await request(app).post("/blogs").set("Authorization", userToken).send({
+        const response = await request(app).post("/blogs").set("Authorization", "Bearer "+userToken).send({
             title: article.title
         });
         expect(response.statusCode).toBe(400);
     });
 
     test("🧪 Create a blog with invalid title", async () => {
-        const response = await request(app).post("/blogs").set("Authorization", userToken).send({
+        const response = await request(app).post("/blogs").set("Authorization", "Bearer "+userToken).send({
             title: "test",
             content: article.content
         });
@@ -235,7 +235,7 @@ describe("Testing the main API scenarios", () => {
     });
 
     test("🧪 Should have 0 blog written by malicious user", async () => {
-        const response = await request(app).get("/blogs?author=" + maliciousUserId).set("Authorization", userToken);
+        const response = await request(app).get("/blogs?author=" + maliciousUserId).set("Authorization", "Bearer "+userToken);
         expect(response.statusCode).toBe(200);
         expect(response.body.data.articles.length).toBe(0);
     });
@@ -248,7 +248,7 @@ describe("Testing the main API scenarios", () => {
     });
 
     test("🧪 Comment a blog", async () => {
-        const response = await request(app).post(`/blogs/comments/${articleId}`).set("Authorization", userToken).send({
+        const response = await request(app).post(`/blogs/comments/${articleId}`).set("Authorization", "Bearer "+userToken).send({
             comment: comment.content
         });
         commentId = response.body.data.comment.id;
@@ -262,7 +262,7 @@ describe("Testing the main API scenarios", () => {
     });
 
     test("🧪 Comment with no content", async () => {
-        const response = await request(app).post(`/blogs/comments/${articleId}`).set("Authorization", userToken).send({
+        const response = await request(app).post(`/blogs/comments/${articleId}`).set("Authorization", "Bearer "+userToken).send({
             comment: ""
         });
         expect(response.statusCode).toBe(400);
@@ -278,7 +278,7 @@ describe("Testing the main API scenarios", () => {
         for (let i = 0; i < 10; i++) {
             let title = uuidv4().replace(/-/g, "");
             let content = uuidv4().replace(/-/g, "");
-            const response = await request(app).post("/blogs").set("Authorization", userToken).send({
+            const response = await request(app).post("/blogs").set("Authorization", "Bearer "+userToken).send({
                 title,
                 content
             });
@@ -301,21 +301,21 @@ describe("Testing the main API scenarios", () => {
     });
 
     test("🧪 Edit a blog", async () => {
-        const response = await request(app).put(`/blogs/${articleId}`).set("Authorization", userToken).send({
+        const response = await request(app).put(`/blogs/${articleId}`).set("Authorization", "Bearer "+userToken).send({
             title: article.title + " foo",
         });
         expect(response.statusCode).toBe(200);
     });
 
     test("🧪 Edit a blog with malicious user", async () => {
-        const response = await request(app).put(`/blogs/${articleId}`).set("Authorization", maliciousUserToken).send({
+        const response = await request(app).put(`/blogs/${articleId}`).set("Authorization", "Bearer "+maliciousUserToken).send({
             title: "We are Legion. We do not forgive. We do not forget. Expect us.",
         });
         expect(response.statusCode).toBe(403);
     });
     
     test("🧪 Edit not existing blog", async () => {
-        const response = await request(app).put("/blogs/unexistedId").set("Authorization", userToken).send({
+        const response = await request(app).put("/blogs/unexistedId").set("Authorization", "Bearer "+userToken).send({
             title: article.title + " foo",
         });
         expect(response.statusCode).toBe(404);
@@ -325,7 +325,7 @@ describe("Testing the main API scenarios", () => {
         const response = await request(app).get(`/blogs/${articleId}`);
         expect(response.statusCode).toBe(200);
         let beforeEditDate = response.body.data.article.lastUpdated;
-        const responseEdit = await request(app).put(`/blogs/${articleId}`).set("Authorization", userToken).send({
+        const responseEdit = await request(app).put(`/blogs/${articleId}`).set("Authorization", "Bearer "+userToken).send({
             title: article.title + " edited",
             content: article.content
         });
@@ -352,32 +352,32 @@ describe("Testing the main API scenarios", () => {
     });
 
     test("🧪 Delete a with malicious user", async () => {
-        const response = await request(app).delete(`/blogs/${articleId}`).set("Authorization", maliciousUserToken);
+        const response = await request(app).delete(`/blogs/${articleId}`).set("Authorization", "Bearer "+maliciousUserToken);
         expect(response.statusCode).toBe(403);
     });
 
     test("🧪 Delete a comment", async () => {
-        const response = await request(app).delete(`/blogs/comments/${commentId}`).set("Authorization", userToken);
+        const response = await request(app).delete(`/blogs/comments/${commentId}`).set("Authorization", "Bearer "+userToken);
         expect(response.statusCode).toBe(200);
     });
 
     test("🧪 Delete unexisting comment", async () => {
-        const response = await request(app).delete(`/blogs/comments/${commentId}`).set("Authorization", maliciousUserToken);
+        const response = await request(app).delete(`/blogs/comments/${commentId}`).set("Authorization", "Bearer "+maliciousUserToken);
         expect(response.statusCode).toBe(404);
     });
 
     test("🧪 Delete a blog", async () => {
-        const response = await request(app).delete(`/blogs/${articleId}`).set("Authorization", userToken);
+        const response = await request(app).delete(`/blogs/${articleId}`).set("Authorization", "Bearer "+userToken);
         expect(response.statusCode).toBe(200);
     });
 
     test("🧪 Delete main user", async () => {
-        const response = await request(app).delete(`/users/${userId}`).set("Authorization", userToken);
+        const response = await request(app).delete(`/users/${userId}`).set("Authorization", "Bearer "+userToken);
         expect(response.statusCode).toBe(200);
     });
 
     test("🧪 Delete malicious user", async () => {
-        const response = await request(app).delete(`/users/${maliciousUserId}`).set("Authorization", maliciousUserToken);
+        const response = await request(app).delete(`/users/${maliciousUserId}`).set("Authorization", "Bearer "+maliciousUserToken);
         expect(response.statusCode).toBe(200);
     });
 

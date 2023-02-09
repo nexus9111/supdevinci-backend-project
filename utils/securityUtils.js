@@ -31,6 +31,11 @@ const getConnectedUser = async (req) => {
         responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "missing token");
     };
 
+    token = token.replace("Bearer ", "");
+    if (token.length === 0) {
+        responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "missing token");
+    }
+
     // decode token
     let decoded = jwt.verify(token, JWT_SECRET);
     if (!decoded) {
