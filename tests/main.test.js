@@ -292,10 +292,12 @@ describe("Testing the main API scenarios", () => {
         const responseAllBlogsPage2 = await request(app).get("/blogs?page=2");
         expect(responseAllBlogsPage2.statusCode).toBe(200);
         expect(responseAllBlogsPage2.body.data.articles.length).toBe(1);
+        expect(responseAllBlogsPage2.body.data.maxPage).toBe(2);
 
         const responseAllBlogsWithPageSizeAndPagination = await request(app).get("/blogs?page=3&pageSize=2");
         expect(responseAllBlogsWithPageSizeAndPagination.statusCode).toBe(200);
         expect(responseAllBlogsWithPageSizeAndPagination.body.data.articles.length).toBe(2);
+        expect(responseAllBlogsWithPageSizeAndPagination.body.data.maxPage).toBe(6);
     });
 
     test("🧪 Edit a blog", async () => {

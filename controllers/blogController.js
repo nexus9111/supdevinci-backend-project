@@ -21,8 +21,13 @@ exports.getAll = async (req, res, next) => {
         }
         let articles = await articleUtils.getArticles(pageSize, skip, databaseQuery);
 
+        let articlesCount = await Article.countDocuments(databaseQuery);
+
         return responseUtils.successResponse(res, req, 200, {
-            articles: articles
+            articles: articles,
+            maxPage: Math.ceil(articlesCount / pageSize),
+            pageSize: pageSize,
+            page: page
         });
     } catch (error) {
         next(error);
