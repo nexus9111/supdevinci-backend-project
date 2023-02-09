@@ -49,6 +49,8 @@ $ npm run prod
 
 ## 🧪 Tests
 
+⚠️ make sure to set high RATE_LIMITER in `.env.test` file.
+
 Run tests:
 
 ```console
