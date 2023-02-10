@@ -5,9 +5,12 @@ const cors = require("cors");
 const rateLimit = require("express-rate-limit");
 const fileUpload = require("express-fileupload");
 const expressip = require("express-ip");
+const passport = require("passport");
+const cookieSession = require("cookie-session");
 const app = express();
 
 const { RATE_LIMITER } = require("./vars");
+require("./google");
 
 const limiter = rateLimit(
     {
@@ -31,6 +34,15 @@ app.use(bodyParser.json({ limit: "20mb" }));
 app.use(cors());
 app.options("*", cors());
 app.use(fileUpload());
+
+app.use(cookieSession({
+    name: "google-auth-session",
+    keys: ["key1", "key2"]
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 
 app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "*");

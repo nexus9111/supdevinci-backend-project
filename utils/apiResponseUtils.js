@@ -19,6 +19,7 @@ exports.successResponse = (res, req, statusCode, data) => {
 exports.safeDatabaseData = (dataBaseData) => {
     const safeDataBaseData = dataBaseData.toObject();
     delete safeDataBaseData.password;
+    delete safeDataBaseData.type;
     delete safeDataBaseData.__v;
     delete safeDataBaseData._id;
     return safeDataBaseData;

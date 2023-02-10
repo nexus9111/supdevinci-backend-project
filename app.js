@@ -43,6 +43,7 @@ const routes = [
     { path: "/auth", router: require("./router/authRouter"), authguard: false },
     { path: "/blogs", router: require("./router/blogRouter"), authguard: false },
     { path: "/profiles", router: require("./router/profileRouter"), authguard: true },
+    { path: "/auth-provider", router: require("./router/authProviderRouter"), authguard: false },
 ];
 
 for (const route of routes) {

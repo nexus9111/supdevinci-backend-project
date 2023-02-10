@@ -107,7 +107,7 @@ exports.profile = async (req, res, next) => {
 exports.deleteProfile = async (req, res, next) => {
     try {
         await Account.deleteOne({ id: req.connectedUser.id });
-        
+
         // get all Persons and Companies of the user
         let persons = await Person.find({ owner: req.connectedUser.id });
         let companies = await Company.find({ owner: req.connectedUser.id });
@@ -122,7 +122,7 @@ exports.deleteProfile = async (req, res, next) => {
             await Article.deleteMany({ author: company.id });
             await Comment.deleteMany({ author: company.id });
         }
-        
+
         // delete all persons and company of the user
         await Person.deleteMany({ owner: req.connectedUser.id });
         await Company.deleteMany({ owner: req.connectedUser.id });
@@ -132,6 +132,47 @@ exports.deleteProfile = async (req, res, next) => {
         return responseUtils.successResponse(res, req, 200, {
             message: "Profile deleted successfully",
         });
+    } catch (error) {
+        next(error);
+    }
+};
+
+exports.providerAuth = async (req, res, next) => {
+    try {
+        switch (req.provider) {
+            case "google":
+                let email = req.user.email.toLowerCase().trim();
+                const accountExists = await Account.findOne({ email: email });
+                if (accountExists) {
+                    // generate token
+                    let token = jwt.sign({ id: accountExists.id }, JWT_SECRET, { expiresIn: "1d" });
+                    return responseUtils.successResponse(res, req, 200, {
+                        message: "Logged in successfully",
+                        token: "Bearer " + token,
+                        account: responseUtils.safeDatabaseData(accountExists),
+                    });
+                }
+
+                // create new account
+                let newAccount = new Account({
+                    email: email,
+                    type: req.provider, 
+                });
+
+                let account = await newAccount.save();
+
+                // generate token
+                let token = jwt.sign({ id: account.id }, JWT_SECRET, { expiresIn: "1d" });
+
+                return responseUtils.successResponse(res, req, 201, {
+                    message: "Account created successfully",
+                    account: responseUtils.safeDatabaseData(account),
+                    token: "Bearer " + token,
+                });
+            default:
+                responseUtils.errorResponse(req, errors.errors.NOT_ALREADY_IMPLEMENTED, "provider implemented yet");
+                return;
+        }
     } catch (error) {
         next(error);
     }

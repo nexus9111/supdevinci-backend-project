@@ -27,4 +27,8 @@ exports.errors = {
         message: "Not already implemented",
         code: 501
     },
+    ERROR_PROVIDER_AUTH: {
+        message: "Error provider auth",
+        code: 500
+    },
 };
