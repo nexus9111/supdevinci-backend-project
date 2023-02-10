@@ -143,30 +143,24 @@ exports.providerAuth = async (req, res, next) => {
         switch (req.provider) {
             case "google":
                 let email = req.user.email.toLowerCase().trim();
-                const accountExists = await Account.findOne({ email: email });
-                if (accountExists) {
-                    // generate token
-                    let token = jwt.sign({ id: accountExists.id }, JWT_SECRET, { expiresIn: "1d" });
-                    return responseUtils.successResponse(res, req, 200, {
-                        message: "Logged in successfully",
-                        token: "Bearer " + token,
-                        account: responseUtils.safeDatabaseData(accountExists),
+                let status = 200;
+
+                const account = await Account.findOne({ email: email });
+                if (!account) {
+                    account = new Account({
+                        email: email,
+                        type: req.provider, 
                     });
+
+                    await account.save();
+                    status = 201;
                 }
-
-                // create new account
-                let newAccount = new Account({
-                    email: email,
-                    type: req.provider, 
-                });
-
-                let account = await newAccount.save();
-
+                
                 // generate token
                 let token = jwt.sign({ id: account.id }, JWT_SECRET, { expiresIn: "1d" });
 
-                return responseUtils.successResponse(res, req, 201, {
-                    message: "Account created successfully",
+                return responseUtils.successResponse(res, req, status, {
+                    message: status === 201 ? "Account created successfully" : "Logged in successfully",
                     account: responseUtils.safeDatabaseData(account),
                     token: "Bearer " + token,
                 });
