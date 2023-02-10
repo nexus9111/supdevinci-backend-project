@@ -57,7 +57,7 @@ const comment = {
 };
 
 /* -------------------------------------------------------------------------- */
-/*                         Testing failing resgisters                         */
+/*                     Testing API without using database                     */
 /* -------------------------------------------------------------------------- */
 describe("Testing API without using database", () => {
     beforeAll(async () => {
@@ -97,6 +97,57 @@ describe("Testing API without using database", () => {
         expect(response.statusCode).toBe(401);
     });
 
+    test("🧪 Person profile creation without credentials - should fail", async () => {
+        const response = await request(app).post(PROFILE_ENDPOINT)
+            .send(accountPerson);
+        expect(response.statusCode).toBe(401);
+    });
+});
+
+/* -------------------------------------------------------------------------- */
+/*                                  AUTH TEST                                 */
+/* -------------------------------------------------------------------------- */
+describe("Testing the main API authentication", () => {
+    beforeAll(async () => {
+        await mongo.connect();
+    });
+
+    afterAll(() => {
+        mongo.disconnect();
+    });
+
+    test("🧪 Account creation", async () => {
+        const response = await request(app).post(ACCOUNT_REGISTER_ENDPOINT).send(account);
+        expect(response.statusCode).toBe(201);
+        expect(response.body.data.account.email).toBe(account.email);
+        accountId = response.body.data.account.id;
+    });
+
+    test("🧪 Account creation with same email - should fail", async () => {
+        let startingTime = new Date();
+        const response = await request(app).post(ACCOUNT_REGISTER_ENDPOINT).send(account);
+        let endingTime = new Date();
+        // We expect the response to be higher than 300ms
+        expect(endingTime - startingTime).toBeGreaterThan(290);
+        expect(response.statusCode).toBe(409);
+    });
+
+    test("🧪 Login with wrong email - should fail", async () => {
+        const response = await request(app).post(ACCOUNT_LOGIN_ENDPOINT).send({
+            email: "test",
+            password: account.password
+        });
+        expect(response.statusCode).toBe(400);
+    });
+
+    test("🧪 Login with wrong password - should fail", async () => {
+        const response = await request(app).post(ACCOUNT_LOGIN_ENDPOINT).send({
+            email: account.email,
+            password: "test"
+        });
+        expect(response.statusCode).toBe(400);
+    });
+
     test("🧪 Login with invalid body - should fail", async () => {
         const response = await request(app).post(ACCOUNT_LOGIN_ENDPOINT).send({
             email: account.email,
@@ -104,12 +155,28 @@ describe("Testing API without using database", () => {
         expect(response.statusCode).toBe(400);
     });
 
-    test("🧪 Person profile creation without credentials - should fail", async () => {
-        const response = await request(app).post(PROFILE_ENDPOINT)
-            .send(accountPerson);
+    let accountToken;
+    test("🧪 Login", async () => {
+        const response = await request(app).post(ACCOUNT_LOGIN_ENDPOINT).send({
+            email: account.email,
+            password: account.password
+        });
+        expect(response.statusCode).toBe(200);
+        expect(response.body.data.account.email).toBe(account.email);
+        accountToken = response.body.data.token;
+    });
+
+    test("🧪 Delete account without credentials - should fail", async () => {
+        const response = await request(app).delete(`${ACCOUNT_ENDPOINT}`);
         expect(response.statusCode).toBe(401);
     });
-});
+
+    test("🧪 Delete account", async () => {
+        const response = await request(app).delete(`${ACCOUNT_ENDPOINT}`)
+            .set("Authorization", accountToken);
+        expect(response.statusCode).toBe(200);
+    });
+});    
 
 /* -------------------------------------------------------------------------- */
 /*                       Testing the main API scenarios                       */
@@ -236,7 +303,6 @@ describe("Testing the main API scenarios with malicious user", () => {
     let maliciousAccountToken;
     let maliciousProfileId;
     let accountPersonId;
-    let accountCompanyId;
 
     beforeAll(async () => {
         await mongo.connect();
@@ -246,23 +312,18 @@ describe("Testing the main API scenarios with malicious user", () => {
         mongo.disconnect();
     });
 
-    test("🧪 Create an account", async () => {
+    test("🧪 Account creation", async () => {
         const response = await request(app).post(ACCOUNT_REGISTER_ENDPOINT).send(account);
         expect(response.statusCode).toBe(201);
         expect(response.body.data.account.email).toBe(account.email);
         accountId = response.body.data.account.id;
     });
 
-    test("🧪 Create a malicious account", async () => {
+    test("🧪 Malicious account creation", async () => {
         const response = await request(app).post(ACCOUNT_REGISTER_ENDPOINT).send(maliciousAccount);
         expect(response.statusCode).toBe(201);
         expect(response.body.data.account.email).toBe(maliciousAccount.email);
         maliciousAccountId = response.body.data.account.id;
-    });
-
-    test("🧪 Create a user with same email", async () => {
-        const response = await request(app).post(ACCOUNT_REGISTER_ENDPOINT).send(account);
-        expect(response.statusCode).toBe(409);
     });
 
     test("🧪 Login", async () => {
@@ -275,7 +336,7 @@ describe("Testing the main API scenarios with malicious user", () => {
         accountToken = response.body.data.token;
     });
 
-    test("🧪 Login with malicious user", async () => {
+    test("🧪 Malicious account login", async () => {
         const response = await request(app).post(ACCOUNT_LOGIN_ENDPOINT).send({
             email: maliciousAccount.email,
             password: maliciousAccount.password
@@ -285,23 +346,7 @@ describe("Testing the main API scenarios with malicious user", () => {
         maliciousAccountToken = response.body.data.token;
     });
 
-    test("🧪 Login with wrong email", async () => {
-        const response = await request(app).post(ACCOUNT_LOGIN_ENDPOINT).send({
-            email: "test",
-            password: account.password
-        });
-        expect(response.statusCode).toBe(400);
-    });
-
-    test("🧪 Login with wrong password", async () => {
-        const response = await request(app).post(ACCOUNT_LOGIN_ENDPOINT).send({
-            email: account.email,
-            password: "test"
-        });
-        expect(response.statusCode).toBe(400);
-    });
-
-    test("🧪 Get account profile", async () => {
+    test("🧪 Account profile getter", async () => {
         const response = await request(app).get(ACCOUNT_ENDPOINT)
             .set("Authorization", accountToken);
         expect(response.statusCode).toBe(200);
@@ -311,7 +356,7 @@ describe("Testing the main API scenarios with malicious user", () => {
         expect(response.body.data.companies.length).toBe(0);
     });
 
-    test("🧪 Create account person", async () => {
+    test("🧪 Person profile creation", async () => {
         const response = await request(app).post(PROFILE_ENDPOINT)
             .set("Authorization", accountToken)
             .send(accountPerson);
@@ -322,7 +367,7 @@ describe("Testing the main API scenarios with malicious user", () => {
         accountPersonId = response.body.data.person.id;
     });
 
-    test("🧪 Create malicious account person", async () => {
+    test("🧪 Person profile creation on malicious account", async () => {
         const response = await request(app).post(PROFILE_ENDPOINT)
             .set("Authorization", maliciousAccountToken)
             .send(maliciousAccountPerson);
@@ -333,7 +378,7 @@ describe("Testing the main API scenarios with malicious user", () => {
         maliciousProfileId = response.body.data.person.id;
     });
 
-    test("🧪 Create account company", async () => {
+    test("🧪 Company profile creation", async () => {
         const response = await request(app).post(PROFILE_ENDPOINT)
             .set("Authorization", accountToken)
             .send(accountCompany);
@@ -353,7 +398,7 @@ describe("Testing the main API scenarios with malicious user", () => {
         expect(response.body.data.companies.length).toBe(1);
     });
 
-    test("🧪 Create a blog from person profile", async () => {
+    test("🧪 Person profile article creation", async () => {
         const articleWithProfileId = Object.assign({}, article, { profileId: accountPersonId });
         const response = await request(app).post(BLOG_ENDPOINT)
             .set("Authorization", accountToken)
@@ -365,7 +410,7 @@ describe("Testing the main API scenarios with malicious user", () => {
         articleId = response.body.data.article.id;
     });
 
-    test("🧪 Get blog from person profile", async () => {
+    test("🧪 Person profile article getter", async () => {
         const response = await request(app).get(`${BLOG_ENDPOINT}/${articleId}`)
             .set("Authorization", accountToken);
         expect(response.statusCode).toBe(200);
@@ -374,7 +419,7 @@ describe("Testing the main API scenarios with malicious user", () => {
         expect(response.body.data.article.author).toBe(accountPersonId);
     });
 
-    test("🧪 Edit person blog title", async () => {
+    test("🧪 Person profile article title edition", async () => {
         const response = await request(app).put(`${BLOG_ENDPOINT}/${articleId}`)
             .set("Authorization", accountToken)
             .send({ title: "New title", profileId: accountPersonId });
@@ -384,7 +429,7 @@ describe("Testing the main API scenarios with malicious user", () => {
         expect(response.body.data.article.author).toBe(accountPersonId);
     });
 
-    test("🧪 Edit person blog content", async () => {
+    test("🧪 Person profile article content edition", async () => {
         const response = await request(app).put(`${BLOG_ENDPOINT}/${articleId}`)
             .set("Authorization", accountToken)
             .send({ content: "New content", profileId: accountPersonId });
@@ -394,7 +439,7 @@ describe("Testing the main API scenarios with malicious user", () => {
         expect(response.body.data.article.author).toBe(accountPersonId);
     });
 
-    test("🧪 Create a blog from person company", async () => {
+    test("🧪 Company profile article content edition", async () => {
         // merge article and profileId
         const articleWithProfileId = Object.assign({}, article, { profileId: companyId });
         const response = await request(app).post(BLOG_ENDPOINT)
@@ -406,19 +451,19 @@ describe("Testing the main API scenarios with malicious user", () => {
         expect(response.body.data.article.author).toBe(companyId);
     });
 
-    test("🧪 There should be 2 blogs", async () => {
+    test("🧪 There should be 2 articles", async () => {
         const response = await request(app).get(BLOG_ENDPOINT);
         expect(response.statusCode).toBe(200);
         expect(response.body.data.articles.length).toBe(2);
     });
 
-    test("🧪 There should be 0 comments on person blog", async () => {
+    test("🧪 There should be 0 comments on person profile article", async () => {
         const response = await request(app).get(`${BLOG_ENDPOINT}/${articleId}`);
         expect(response.statusCode).toBe(200);
         expect(response.body.data.article.comments.length).toBe(0);
     });
 
-    test("🧪 Create a comment on person blog", async () => {
+    test("🧪 Comment creation on person profile article", async () => {
         const commentWithProfileId = Object.assign({}, comment, { profileId: accountPersonId });
         const response = await request(app).post(`${BLOG_ENDPOINT}/${articleId}/comments`)
             .set("Authorization", accountToken)
@@ -429,36 +474,36 @@ describe("Testing the main API scenarios with malicious user", () => {
         commentId = response.body.data.comment.id;
     });
 
-    test("🧪 There should be 1 comment on person blog", async () => {
+    test("🧪 There should be 1 comment on person profile article", async () => {
         const response = await request(app).get(`${BLOG_ENDPOINT}/${articleId}/comments`);
         expect(response.statusCode).toBe(200);
         expect(response.body.data.comments.length).toBe(1);
     });
 
-    test("🧪 Delete a comment on person blog without being author should fail", async () => {
+    test("🧪 Comment deletion on person profile article without being author - should fail", async () => {
         const response = await request(app).delete(`${BLOG_ENDPOINT}/comments/${commentId}?profileId=${maliciousProfileId}`)
             .set("Authorization", maliciousAccountToken);
         expect(response.statusCode).toBe(403);
     });
 
-    test("🧪 Delete a comment on person blog without credentials should fail", async () => {
+    test("🧪 Comment deletion on person profile article without credentials - should fail", async () => {
         const response = await request(app).delete(`${BLOG_ENDPOINT}/comments/${commentId}`);
         expect(response.statusCode).toBe(401);
     });
 
-    test("🧪 Delete a comment on person blog", async () => {
+    test("🧪 Comment deletion on person profile article", async () => {
         const response = await request(app).delete(`${BLOG_ENDPOINT}/comments/${commentId}?profileId=${accountPersonId}`)
             .set("Authorization", accountToken);
         expect(response.statusCode).toBe(200);
     });
 
-    test("🧪 There should be 0 comments on person blog", async () => {
+    test("🧪 There should be 0 comments on person profile article", async () => {
         const response = await request(app).get(`${BLOG_ENDPOINT}/${articleId}`);
         expect(response.statusCode).toBe(200);
         expect(response.body.data.article.comments.length).toBe(0);
     });
 
-    test("🧪 Create a comment on person blog with malicious person", async () => {
+    test("🧪 Comment creation on person profile article with malicious person profile", async () => {
         const commentWithProfileId = Object.assign({}, comment, { profileId: maliciousProfileId });
         const response = await request(app).post(`${BLOG_ENDPOINT}/${articleId}/comments`)
             .set("Authorization", maliciousAccountToken)
@@ -469,30 +514,30 @@ describe("Testing the main API scenarios with malicious user", () => {
         commentId = response.body.data.comment.id;
     });
 
-    test("🧪 There should be 1 comment on person blog", async () => {
+    test("🧪 There should be 1 comment on person profile article", async () => {
         const response = await request(app).get(`${BLOG_ENDPOINT}/${articleId}`);
         expect(response.statusCode).toBe(200);
         expect(response.body.data.article.comments.length).toBe(1);
     });
 
-    test("🧪 Delete a comment written by malicious person on person blog with malicious person", async () => {
+    test("🧪 Comment deletion on person profile article written by malicious person profile", async () => {
         const response = await request(app).delete(`${BLOG_ENDPOINT}/comments/${commentId}?profileId=${maliciousProfileId}`)
             .set("Authorization", maliciousAccountToken);
         expect(response.statusCode).toBe(200);
     });
 
-    test("🧪 Delete a blog from person profile without being author should fail", async () => {
+    test("🧪 Person profile article deletion as malicious person profile - should fail", async () => {
         const response = await request(app).delete(`${BLOG_ENDPOINT}/${articleId}?profileId=${maliciousProfileId}`)
             .set("Authorization", maliciousAccountToken);
         expect(response.statusCode).toBe(403);
     });
 
-    test("🧪 Delete a blog from person profile without credentials should fail", async () => {
+    test("🧪 Person profile article deletion without credentials - should fail", async () => {
         const response = await request(app).delete(`${BLOG_ENDPOINT}/${articleId}`);
         expect(response.statusCode).toBe(401);
     });
 
-    test("🧪 Create 22 comments on person blog and check pagination", async () => {
+    test("🧪 22 comment creation on person profile article to check pagination", async () => {
         for (let i = 0; i < 22; i++) {
             const commentWithProfileId = Object.assign({}, comment, { profileId: accountPersonId });
             const response = await request(app).post(`${BLOG_ENDPOINT}/${articleId}/comments`)
@@ -516,7 +561,7 @@ describe("Testing the main API scenarios with malicious user", () => {
         expect(response2.body.data.currentPage).toBe(2);
     });
 
-    test("🧪 Create 22 blogs and check pagination", async () => {
+    test("🧪 22 articles creation on person profile article to check pagination", async () => {
         for (let i = 0; i < 22; i++) {
             blogContent = {
                 title: uuidv4(),
@@ -544,19 +589,19 @@ describe("Testing the main API scenarios with malicious user", () => {
         expect(response2.body.data.currentPage).toBe(2);
     });
 
-    test("🧪 Delete a blog from person profile", async () => {
+    test("🧪 Article deletion on person profile", async () => {
         const response = await request(app).delete(`${BLOG_ENDPOINT}/${articleId}?profileId=${accountPersonId}`)
             .set("Authorization", accountToken);
         expect(response.statusCode).toBe(200);
     });
 
-    test("🧪 Delete malicious account", async () => {
+    test("🧪 Malicious account deletion", async () => {
         const response = await request(app).delete(`${ACCOUNT_ENDPOINT}`)
             .set("Authorization", maliciousAccountToken);
         expect(response.statusCode).toBe(200);
     });
 
-    test("🧪 Delete account", async () => {
+    test("🧪 Account deletion", async () => {
         const response = await request(app).delete(`${ACCOUNT_ENDPOINT}`)
             .set("Authorization", accountToken);
         expect(response.statusCode).toBe(200);
