@@ -5,6 +5,7 @@ const logger = require("./logger");
 mongoose.Promise = global.Promise;
 mongoose.set("strictQuery", false);
 
+/* istanbul ignore next */
 exports.connect = async () => {
     // test randomly failed because of this
     // so I added a promise to make sure it's connected

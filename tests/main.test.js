@@ -176,7 +176,7 @@ describe("Testing the main API authentication", () => {
             .set("Authorization", accountToken);
         expect(response.statusCode).toBe(200);
     });
-});    
+});
 
 /* -------------------------------------------------------------------------- */
 /*                       Testing the main API scenarios                       */
@@ -417,6 +417,9 @@ describe("Testing the main API scenarios with malicious user", () => {
         expect(response.body.data.article.title).toBe(article.title);
         expect(response.body.data.article.content).toBe(article.content);
         expect(response.body.data.article.author).toBe(accountPersonId);
+        // there should not have __v and _id
+        expect(response.body.data.article.__v).toBe(undefined);
+        expect(response.body.data.article._id).toBe(undefined);
     });
 
     test("🧪 Person profile article title edition", async () => {
@@ -725,6 +728,13 @@ describe("Testing Profile controller", () => {
         expect(response.body.data.persons.length).toBe(1);
         expect(response.body.data.companies.length).toBe(1);
         expect(response.body.data.persons[0].id).toBe(accountPersonId);
+    });
+
+    test("🧪 Account getter with fake token should fail", async () => {
+        const response = await request(app).get(PROFILE_ENDPOINT)
+            .set("Authorization", "Bearer fakeToken");
+        console.log(response.body);
+        expect(response.statusCode).toBe(401);
     });
 
 

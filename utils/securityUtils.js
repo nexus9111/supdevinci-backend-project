@@ -29,19 +29,18 @@ exports.isPasswordValid = (password) => {
 
 const getConnectedUser = async (req) => {
     let token = req.headers.authorization;
+    let decoded;
     if (!token) {
         responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "missing token");
     };
 
     try {
         token = token.split(" ")[1];
+        decoded = jwt.verify(token, JWT_SECRET);
+        if (!decoded) {
+            throw new Error("invalid token");
+        }
     } catch {
-        responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "invalid token");
-    }
-
-    // decode token
-    let decoded = jwt.verify(token, JWT_SECRET);
-    if (!decoded) {
         responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "invalid token");
     }
 
