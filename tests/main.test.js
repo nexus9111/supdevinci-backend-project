@@ -7,11 +7,8 @@ const app = require("../app");
 const ACCOUNT_REGISTER_ENDPOINT = "/auth/register";
 const ACCOUNT_LOGIN_ENDPOINT = "/auth/login";
 const ACCOUNT_ENDPOINT = "/auth";
-
 const PROFILE_ENDPOINT = "/profiles";
-
 const BLOG_ENDPOINT = "/blogs";
-
 const EASTER_EGG = "/easter-egg";
 
 const account = {
@@ -802,7 +799,6 @@ describe("Testing Profile controller", () => {
 /* -------------------------------------------------------------------------- */
 
 describe("Testing API features", () => {
-
     test("🧪 Server should be alive", async () => {
         const response = await request(app).get("/");
         expect(response.statusCode).toBe(200);

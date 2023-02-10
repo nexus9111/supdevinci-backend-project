@@ -10,5 +10,6 @@ module.exports = {
     RATE_LIMITER: Number.parseInt(process.env.RATE_LIMITER, 10),
     GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
     GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
+    GOOGLE_CALLBACK_ENDPOINT: process.env.GOOGLE_CALLBACK_ENDPOINT,
     BLACKLIST: ["178.20.55.18"]
 }; 
