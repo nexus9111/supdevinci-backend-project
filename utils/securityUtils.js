@@ -83,30 +83,22 @@ exports.authenticateProfile = async (req, res, next) => {
         let person = await Person.findOne({ id: profileId })
             .select("-__v -_id");
 
-        if (!person) {
-            let company = await Company.findOne({ id: profileId })
-                .select("-__v -_id");
+        if (person && person.owner === req.connectedUser.id) {
+            req.profile = person;
+            req.profileType = "Person";
+            return next();
+        }
 
-            if (!company) {
-                responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "unauthorized");
-            }
+        let company = await Company.findOne({ id: profileId })
+            .select("-__v -_id");
 
-            if (company.owner !== req.connectedUser.id) {
-                responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "unauthorized");
-            }
-
+        if (company && company.owner === req.connectedUser.id) {
             req.profile = company;
             req.profileType = "Company";
             return next();
         }
 
-        if (person.owner !== req.connectedUser.id) {
-            responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "unauthorized");
-        }
-
-        req.profile = person;
-        req.profileType = "Person";
-        next();
+        return responseUtils.errorResponse(req, errors.errors.UNAUTHORIZED, "unauthorized");
     } catch (error) {
         next(error);
     }
