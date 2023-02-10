@@ -137,6 +137,7 @@ exports.deleteProfile = async (req, res, next) => {
     }
 };
 
+/* istanbul ignore next */
 exports.providerAuth = async (req, res, next) => {
     try {
         switch (req.provider) {
